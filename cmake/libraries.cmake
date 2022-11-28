@@ -1,7 +1,7 @@
 include_guard()
 
 set(SDL2_VERSION 2.24.2)
-set(VENDOR_DIR ${PROJECT_SOURCE_DIR}/vendor)
+set(VENDOR_DIR ${PROJECT_SOURCE_DIR}/libs)
 
 function(link_default_libraries target)
   find_package(SDL2 ${SDL2_VERSION} REQUIRED)
