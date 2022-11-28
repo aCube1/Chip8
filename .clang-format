@@ -1,0 +1,13 @@
+BasedOnStyle: LLVM
+Language: Cpp
+IndentWidth: 4
+TabWidth: 4
+UseTab: ForContinuationAndIndentation
+
+AlignConsecutiveMacros: AcrossEmptyLines
+AlignAfterOpenBracket: BlockIndent
+AlignOperands: AlignAfterOperator
+AllowShortBlocksOnASingleLine: Empty
+BinPackParameters: false
+ContinuationIndentWidth: 4
+IncludeBlocks: Regroup
