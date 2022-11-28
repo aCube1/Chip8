@@ -11,6 +11,9 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 # Set CMAKE modules path
 #set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake/modules)
 
+# Set optimization level
+set(OPTIMIZATION_LEVEL "-Og")
+
 # Ensure a CMAKE_BUILD_TYPE is set.
 if(NOT CMAKE_BUILD_TYPE)
 	message(STATUS "No build type specified. Defaulting to Debug.")
@@ -25,10 +28,10 @@ set_property(
 		STRINGS
 			"Debug"
 			"Release"
-			"MinSizeRel"
-			"RelWithDebInfo"
 )
 
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	add_definitions(-DUSE_DEBUG=1)
+elseif(CMAKE_BUILD_TYPE STREQUEAL "Release")
+	set(OPTIMIZATION_LEVEL "-Ofast")
 endif()
