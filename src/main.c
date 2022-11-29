@@ -9,8 +9,9 @@ int main(int argc, char *argv[]) {
 		return EXIT_FAILURE;
 	}
 
-	/* TODO: Create main loop */
-	SDL_Delay(2000);
+	if (core_run() != STATUS_OK) {
+		return EXIT_FAILURE;
+	}
 
 	return EXIT_SUCCESS;
 }

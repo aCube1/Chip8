@@ -13,6 +13,7 @@ target_sources(
 		src/main.c
 		src/core.c
 		src/display.c
+		src/cpu.c
 )
 
 target_compile_features(

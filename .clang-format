@@ -2,12 +2,17 @@ BasedOnStyle: LLVM
 Language: Cpp
 IndentWidth: 4
 TabWidth: 4
+ColumnLimit: 80
 UseTab: ForContinuationAndIndentation
 
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowAllArgumentsOnNextLine: true
 AlignConsecutiveMacros: AcrossEmptyLines
 AlignAfterOpenBracket: BlockIndent
 AlignOperands: AlignAfterOperator
 AllowShortBlocksOnASingleLine: Empty
-BinPackParameters: false
+BinPackArguments: true
+BinPackParameters: true
 ContinuationIndentWidth: 4
 IncludeBlocks: Regroup
+ReflowComments: true

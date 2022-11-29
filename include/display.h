@@ -7,9 +7,13 @@
 typedef struct {
 	SDL_Window *window;
 	SDL_Renderer *renderer;
-} Display;
+} display_t;
 
-int8_t create_display(Display *display);
-void destroy_display(Display *display);
+int8_t create_display(display_t *display);
+void destroy_display(display_t *display);
+
+/* Wrappers to SDL_RenderClear and SDL_RenderPresent respectively. */
+void display_clear(display_t *display);
+void display_update(display_t *display);
 
 #endif /* _DISPLAY_H_ */
