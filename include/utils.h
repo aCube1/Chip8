@@ -9,8 +9,4 @@
 #define WIDTH  800
 #define HEIGHT 600
 
-/* CPU settings */
-#define GFX_WIDTH  64
-#define GFX_HEIGHT 32
-
 #endif /* _UTILS_H_ */

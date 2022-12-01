@@ -2,7 +2,7 @@ BasedOnStyle: LLVM
 Language: Cpp
 IndentWidth: 4
 TabWidth: 4
-ColumnLimit: 80
+ColumnLimit: 90
 UseTab: ForContinuationAndIndentation
 
 AllowAllParametersOfDeclarationOnNextLine: false

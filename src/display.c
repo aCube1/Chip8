@@ -44,6 +44,8 @@ void destroy_display(display_t *display) {
 		SDL_DestroyWindow(display->window);
 		log_info("Window destroyed!");
 	}
+
+	log_info("Display destroyed!");
 }
 
 void display_clear(display_t *display) {
