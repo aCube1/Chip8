@@ -5,8 +5,8 @@
 #define STATUS_OK    0
 
 /* Window settings */
-#define TITLE  "Chip8 Emulator"
-#define WIDTH  800
-#define HEIGHT 600
+#define TITLE          "Chip8 Emulator"
+#define DEFAULT_WIDTH  800
+#define DEFAULT_HEIGHT 600
 
 #endif /* _UTILS_H_ */

@@ -11,6 +11,7 @@ function(link_default_libraries target)
     m
   )
 
+  add_definitions(-DLOG_USE_COLOR=1)
   target_sources(
     ${target}
     PRIVATE

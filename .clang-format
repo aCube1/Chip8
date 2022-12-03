@@ -7,12 +7,17 @@ UseTab: ForContinuationAndIndentation
 
 AllowAllParametersOfDeclarationOnNextLine: false
 AllowAllArgumentsOnNextLine: true
+#AlignArrayOfStructures: Right
 AlignConsecutiveMacros: AcrossEmptyLines
 AlignAfterOpenBracket: BlockIndent
 AlignOperands: AlignAfterOperator
 AllowShortBlocksOnASingleLine: Empty
+AlignTrailingComments: true
 BinPackArguments: true
 BinPackParameters: true
 ContinuationIndentWidth: 4
 IncludeBlocks: Regroup
+IndentPPDirectives: AfterHash
 ReflowComments: true
+SeparateDefinitionBlocks: Leave
+SpacesBeforeTrailingComments: 2
