@@ -28,8 +28,8 @@ static const uint8_t CPU_font[80] = {
 	0xF0, 0x80, 0xF0, 0x80, 0x80, /* F */
 };
 
-int8_t cpu_init(cpu_t *cpu, const char *filename) {
-	(void)filename; /* TODO: Read ROM from a file and load it to memory */
+int8_t cpu_init(cpu_t *cpu, const char *rom_content) {
+	(void)rom_content; /* TODO: Read ROM and load it to memory */
 	reset_cpu(cpu);
 
 	/* Load the built-in fontset int 0x50-0x0A0 */

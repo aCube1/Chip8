@@ -6,7 +6,7 @@
 #include <SDL_render.h>
 #include <SDL_video.h>
 
-int8_t create_display(display_t *display) {
+int8_t create_display(display_t *display, int16_t width, int16_t height) {
 	SDL_Window *window = NULL;
 	SDL_Renderer *renderer = NULL;
 	SDL_WindowFlags window_flags = SDL_WINDOW_OPENGL;
@@ -14,8 +14,7 @@ int8_t create_display(display_t *display) {
 		SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC;
 
 	window = SDL_CreateWindow(
-		TITLE, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH, HEIGHT,
-		window_flags
+		TITLE, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, window_flags
 	);
 	if (window == NULL) {
 		log_fatal("Unable to create window: %s", SDL_GetError());
@@ -54,6 +53,4 @@ void display_clear(display_t *display) {
 	}
 }
 
-void display_update(display_t *display) {
-	SDL_RenderPresent(display->renderer);
-}
+void display_update(display_t *display) { SDL_RenderPresent(display->renderer); }

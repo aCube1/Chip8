@@ -11,9 +11,10 @@ target_sources(
 	${PROJECT_NAME}
 	PRIVATE
 		src/main.c
+		src/cpu.c
+		src/configs.c
 		src/core.c
 		src/display.c
-		src/cpu.c
 		src/opcodes.c
 )
 

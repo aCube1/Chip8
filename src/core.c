@@ -6,7 +6,6 @@
 #include "utils.h"
 
 #include <SDL2/SDL.h>
-#include <stdbool.h>
 
 static void update_fps(void);
 static void core_exit(void);
@@ -25,13 +24,7 @@ static uint64_t last_ticks = 0;
 static uint64_t fps_count = 0;
 static double fps_timer = 0.0;
 
-int8_t core_init(int argc, char *argv[]) {
-	(void)argc;
-	(void)argv;
-
-	/* TODO: Get rom filename from argv. */
-	const char *rom_filename = NULL;
-
+int8_t core_init(configs_t configs) {
 	uint32_t init_flags = SDL_INIT_EVERYTHING;
 
 	if (SDL_Init(init_flags) < 0) {
@@ -39,12 +32,12 @@ int8_t core_init(int argc, char *argv[]) {
 		return STATUS_ERROR;
 	}
 
-	if (create_display(&Core.display) != STATUS_OK) {
+	if (create_display(&Core.display, configs.width, configs.height) != STATUS_OK) {
 		log_fatal("Unable to create display!");
 		return STATUS_ERROR;
 	}
 
-	if (cpu_init(&Core.cpu, rom_filename) != STATUS_OK) {
+	if (cpu_init(&Core.cpu, configs.rom_filepath) != STATUS_OK) {
 		log_fatal("Unable to init Chip-8 CPU.");
 		core_exit();
 		return STATUS_ERROR;
