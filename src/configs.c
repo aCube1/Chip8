@@ -10,8 +10,8 @@
 /* TODO: Windows version. */
 #if defined(__unix__) || defined(__unix) || defined(unix)
 #	include <getopt.h>
-#elif defined(_WIN32) || defined(WIN32)
-#	error "Windows is not supported!"
+#else
+#	error "Unable to get getopt.h header."
 #endif
 
 enum {
@@ -64,7 +64,7 @@ int8_t cfg_parse_options(configs_t *config, int argc, char *argv[]) {
 			set_resolution(&config->height, DEFAULT_HEIGHT, option_index);
 			break;
 		case '?':
-			log_fatal("Unable to recognize option: %s", long_options[option_index]);
+			log_error("Unable to recognize option: %s", long_options[option_index]);
 			return STATUS_ERROR;
 		}
 	}
@@ -78,7 +78,7 @@ int8_t cfg_parse_options(configs_t *config, int argc, char *argv[]) {
 		log_info("Rom filepath provided: %s", argv[optind]);
 		strncpy(config->rom_filepath, argv[optind], MAX_FILEPATH_SIZE);
 	} else {
-		log_fatal("No rom filepath provided!");
+		log_error("No rom filepath provided!");
 		return STATUS_ERROR;
 	}
 

@@ -15,6 +15,7 @@ AllowShortBlocksOnASingleLine: Empty
 AlignTrailingComments: true
 BinPackArguments: true
 BinPackParameters: true
+BreakBeforeBinaryOperators: None
 ContinuationIndentWidth: 4
 IncludeBlocks: Regroup
 IndentPPDirectives: AfterHash

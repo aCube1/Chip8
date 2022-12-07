@@ -4,6 +4,7 @@
 #include "opcodes.h"
 #include "utils.h"
 
+#include <stdlib.h>
 #include <string.h>
 
 static void reset_cpu(cpu_t *cpu);
@@ -28,8 +29,7 @@ static const uint8_t CPU_font[80] = {
 	0xF0, 0x80, 0xF0, 0x80, 0x80, /* F */
 };
 
-int8_t cpu_init(cpu_t *cpu, const char *rom_content) {
-	(void)rom_content; /* TODO: Read ROM and load it to memory */
+int8_t cpu_init(cpu_t *cpu) {
 	reset_cpu(cpu);
 
 	/* Load the built-in fontset int 0x50-0x0A0 */
@@ -38,15 +38,61 @@ int8_t cpu_init(cpu_t *cpu, const char *rom_content) {
 	return STATUS_OK;
 }
 
-int8_t cpu_emulate_cycle(cpu_t *cpu) {
+void cpu_emulate_cycle(cpu_t *cpu) {
 	/* Fetch opcode */
 	cpu->opcode = cpu->memory[cpu->pc] << 8 | cpu->memory[cpu->pc + 1];
-
-	decode_opcode(cpu);
-
+	cpu_decode_opcode(cpu);
 	update_timers(cpu);
+}
 
+int8_t cpu_loadrom(cpu_t *cpu, const char *filepath) {
+	const uint32_t max_rom_size = MEMORY_SIZE - 0x200; /* 3584 bytes */
+	FILE *rom = fopen(filepath, "rb");
+	file_t file;
+
+	if (rom == NULL || get_file_content(&file, rom) != STATUS_OK) {
+		log_error("Unable to read rom!");
+		return STATUS_ERROR;
+	}
+
+	if (file.lenght > max_rom_size) {
+		log_error("Rom file size is bigger than max rom size!");
+		return STATUS_ERROR;
+	}
+
+	/* Load ROM to memory */
+	memcpy(cpu->memory + 0x200, file.content, file.lenght * sizeof(uint8_t));
+
+	file_free(&file);
 	return STATUS_OK;
+}
+
+void cpu_decode_opcode(cpu_t *cpu) {
+	uint8_t next_pc = 0;
+	uint8_t addr = cpu->opcode & 0x0FFF;
+	uint8_t byte = cpu->opcode & 0x00FF;
+	uint8_t nibble = cpu->opcode & 0x000F;
+	uint8_t x = (cpu->opcode & 0x0F00) >> 8; /* Final Result: 0x000F */
+	uint8_t y = (cpu->opcode & 0x00F0) >> 4; /* Final Result: 0x000F */
+
+	/* TODO: Use these variables. */
+	(void)byte;
+	(void)nibble;
+	(void)x;
+	(void)y;
+
+	switch (cpu->opcode & 0xF000) {
+	case 0x0000:
+		/* TODO: Manage 0x0FFF instructions */
+		break;
+	case 0xA000: /* ANNN: Set index register. */
+		next_pc = opcode_LDI(&cpu->index_register, addr);
+		break;
+	default:
+		log_error("Unknown opcode: 0x%X", cpu->opcode);
+	}
+
+	cpu->pc += next_pc;
 }
 
 static void reset_cpu(cpu_t *cpu) {

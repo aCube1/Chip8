@@ -16,6 +16,7 @@ target_sources(
 		src/core.c
 		src/display.c
 		src/opcodes.c
+		src/utils.c
 )
 
 target_compile_features(

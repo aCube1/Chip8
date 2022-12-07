@@ -6,7 +6,7 @@
 /* CPU settings */
 #define GFX_WIDTH       64
 #define GFX_HEIGHT      32
-#define MEMORY_SIZE     4096
+#define MEMORY_SIZE     0x0FFF /* 4096 bytes */
 #define STACK_SIZE      16
 #define REGISTERS_COUNT 16
 #define KEYS_COUNT      16
@@ -32,7 +32,12 @@ typedef struct {
 	uint8_t key_state[KEYS_COUNT]; /* HEX based keymap (0x0-0xF) */
 } cpu_t;
 
-int8_t cpu_init(cpu_t *cpu, const char *filename);
-int8_t cpu_emulate_cycle(cpu_t *cpu);
+int8_t cpu_init(cpu_t *cpu);
+void cpu_emulate_cycle(cpu_t *cpu);
+
+/* Read rom from filepath and load it to the memory. */
+int8_t cpu_loadrom(cpu_t *cpu, const char *filepath);
+/* Decode OPCODE and execute instruction. */
+void cpu_decode_opcode(cpu_t *cpu);
 
 #endif /* _CPU_H_ */

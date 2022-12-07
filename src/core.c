@@ -37,8 +37,14 @@ int8_t core_init(configs_t configs) {
 		return STATUS_ERROR;
 	}
 
-	if (cpu_init(&Core.cpu, configs.rom_filepath) != STATUS_OK) {
-		log_fatal("Unable to init Chip-8 CPU.");
+	if (cpu_init(&Core.cpu) != STATUS_OK) {
+		log_fatal("Unable to init Chip-8 CPU!");
+		core_exit();
+		return STATUS_ERROR;
+	}
+
+	if (cpu_loadrom(&Core.cpu, configs.rom_filepath) != STATUS_OK) {
+		log_error("Unable to load rom to memory!");
 		core_exit();
 		return STATUS_ERROR;
 	}
@@ -55,6 +61,7 @@ int8_t core_run(void) {
 			switch (event.type) {
 			case SDL_QUIT:
 				Core.running = false;
+				break;
 			}
 		}
 
