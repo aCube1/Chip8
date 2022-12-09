@@ -75,21 +75,19 @@ int8_t cpu_decode_opcode(cpu_t *cpu) {
 		"OPCODE: %X | PC: %d | INDEX: %X", cpu->opcode, cpu->pc, cpu->index_register
 	);
 	*/
-	uint16_t addr = cpu->opcode & 0x0FFF;	 /* NNN */
-	uint8_t byte = cpu->opcode & 0x00FF;	 /*  kk */
-	uint8_t nibble = cpu->opcode & 0x000F;	 /*   N */
-	uint8_t x = (cpu->opcode & 0x0F00) >> 8; /* Final Result: 0x000N */
-	uint8_t y = (cpu->opcode & 0x00F0) >> 4; /* Final Result: 0x000N */
-
-	(void)nibble;
+	cpu->addr = cpu->opcode & 0x0FFF;
+	cpu->byte = cpu->opcode & 0x00FF;
+	cpu->nibble = cpu->opcode & 0x000F;
+	cpu->x = (cpu->opcode & 0x0F00) >> 8;
+	cpu->y = (cpu->opcode & 0x00F0) >> 4;
 
 	switch (cpu->opcode & 0xF000) {
 	case 0x0000:
 		switch (cpu->opcode & 0x000F) {
-		case 0x0000: /* 00E0: Clear display. */
+		case 0x0000:
 			opcode_CLS(cpu);
 			break;
-		case 0x000E: /* 00EE: Return from a subroutine. */
+		case 0x000E:
 			opcode_RET(cpu);
 			break;
 		default:
@@ -97,26 +95,26 @@ int8_t cpu_decode_opcode(cpu_t *cpu) {
 			return STATUS_ERROR;
 		}
 		break;
-	case 0x1000: /* 1NNN: Set PC to addr. */
-		opcode_JMP(cpu, addr);
+	case 0x1000:
+		opcode_JMP(cpu);
 		break;
-	case 0x2000: /* 2NNN: Call subroutine at addr. */
-		opcode_CALL(cpu, addr);
+	case 0x2000:
+		opcode_CALL(cpu);
 		break;
-	case 0x3000: /* 3xkk: Skip next instruction if Vx == byte. */
-		opcode_SE(cpu, x, byte);
+	case 0x3000:
+		opcode_SE(cpu);
 		break;
-	case 0x4000: /* 4xkk: Skip next instruction if Vx != byte. */
-		opcode_SNE(cpu, x, byte);
+	case 0x4000:
+		opcode_SNE(cpu);
 		break;
-	case 0x5000: /* 5xy0: Skip next instruction if Vx == Vy. */
-		opcode_SEREG(cpu, x, y);
+	case 0x5000:
+		opcode_SEREG(cpu);
 		break;
-	case 0x6000: /* 6xkk: Load byte to register Vx; */
-		opcode_LDIMM(cpu, x, byte);
+	case 0x6000:
+		opcode_LDIMM(cpu);
 		break;
-	case 0xA000: /* ANNN: Set index register to byte. */
-		opcode_LDI(cpu, addr);
+	case 0xA000:
+		opcode_LDI(cpu);
 		break;
 	default:
 		log_error("Unknown opcode: 0x%X", cpu->opcode);

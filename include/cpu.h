@@ -14,13 +14,13 @@
 typedef struct {
 	uint16_t opcode; /* Current Opcode */
 	uint8_t memory[MEMORY_SIZE];
-	uint8_t v_register[REGISTERS_COUNT];
-
 	uint16_t stack[STACK_SIZE];
-	uint16_t sp; /* Points to the next empty spot in stack */
 
+	/* Registers */
+	uint8_t v_register[REGISTERS_COUNT];
 	uint16_t index_register; /* Index register */
 	uint16_t pc;			 /* Points to the next instruction in memory to execute */
+	uint16_t sp;			 /* Points to the next empty spot in stack */
 
 	/* Screen has a total of 2048 pixels, and hold state of 0 or 1 */
 	uint8_t gfx[GFX_WIDTH * GFX_HEIGHT];
@@ -30,6 +30,13 @@ typedef struct {
 	uint8_t sound_timer;
 
 	uint8_t key_state[KEYS_COUNT]; /* HEX based keymap (0x0-0xF) */
+
+	/* Data */
+	uint16_t addr;	/* 0nnn */
+	uint8_t byte;	/* 0kk0 */
+	uint8_t nibble; /* 000n */
+	uint8_t x;		/* 0X00 */
+	uint8_t y;		/* 00Y0 */
 } cpu_t;
 
 int8_t cpu_init(cpu_t *cpu);
