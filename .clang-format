@@ -3,22 +3,37 @@ Language: Cpp
 IndentWidth: 4
 TabWidth: 4
 ColumnLimit: 90
-UseTab: ForContinuationAndIndentation
+UseTab: Always
+UseCRLF: false
+#ContinuationIndentWidth: 4
 
-AllowAllParametersOfDeclarationOnNextLine: false
-AllowAllArgumentsOnNextLine: true
-#AlignArrayOfStructures: Right
-AlignConsecutiveMacros: AcrossEmptyLines
 AlignAfterOpenBracket: BlockIndent
+#AlignArrayOfStructures: Right
+AlignEscapedNewlines: Left
+AlignConsecutiveMacros: AcrossEmptyLines
 AlignOperands: AlignAfterOperator
-AllowShortBlocksOnASingleLine: Empty
 AlignTrailingComments: true
+
+AllowAllParametersOfDeclarationOnNextLine: true
+AllowAllArgumentsOnNextLine: true
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortBlocksOnASingleLine: Empty
+
+AlwaysBreakAfterReturnType: None
 BinPackArguments: true
-BinPackParameters: true
+BinPackParameters: false
 BreakBeforeBinaryOperators: None
-ContinuationIndentWidth: 4
+
 IncludeBlocks: Regroup
 IndentPPDirectives: AfterHash
+IndentWrappedFunctionNames: true
+
+MaxEmptyLinesToKeep: 1
 ReflowComments: true
 SeparateDefinitionBlocks: Leave
 SpacesBeforeTrailingComments: 2
+
+ReferenceAlignment: Right
+PointerAlignment: Right
+
+PenaltyReturnTypeOnItsOwnLine: 64

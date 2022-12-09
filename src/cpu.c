@@ -32,17 +32,18 @@ static const uint8_t CPU_font[80] = {
 int8_t cpu_init(cpu_t *cpu) {
 	reset_cpu(cpu);
 
-	/* Load the built-in fontset int 0x50-0x0A0 */
+	/* Load the built-in fontset in 0x50-0x0A0 */
 	memcpy(cpu->memory + 0x50, CPU_font, 80 * sizeof(uint8_t));
 
 	return STATUS_OK;
 }
 
-void cpu_emulate_cycle(cpu_t *cpu) {
+int8_t cpu_emulate_cycle(cpu_t *cpu) {
+	update_timers(cpu);
 	/* Fetch opcode */
 	cpu->opcode = cpu->memory[cpu->pc] << 8 | cpu->memory[cpu->pc + 1];
-	cpu_decode_opcode(cpu);
-	update_timers(cpu);
+
+	return cpu_decode_opcode(cpu);
 }
 
 int8_t cpu_loadrom(cpu_t *cpu, const char *filepath) {
@@ -62,45 +63,74 @@ int8_t cpu_loadrom(cpu_t *cpu, const char *filepath) {
 
 	/* Load ROM to memory */
 	memcpy(cpu->memory + 0x200, file.content, file.lenght * sizeof(uint8_t));
+	log_info("Loaded %s with %d bytes to memory.", filepath, file.lenght);
 
-	file_free(&file);
+	file_free(&file); /* Always free allocated memory. */
 	return STATUS_OK;
 }
 
-void cpu_decode_opcode(cpu_t *cpu) {
-	uint8_t next_pc = 0;
-	uint8_t addr = cpu->opcode & 0x0FFF;
-	uint8_t byte = cpu->opcode & 0x00FF;
-	uint8_t nibble = cpu->opcode & 0x000F;
-	uint8_t x = (cpu->opcode & 0x0F00) >> 8; /* Final Result: 0x000F */
-	uint8_t y = (cpu->opcode & 0x00F0) >> 4; /* Final Result: 0x000F */
+int8_t cpu_decode_opcode(cpu_t *cpu) {
+	/*
+	log_debug(
+		"OPCODE: %X | PC: %d | INDEX: %X", cpu->opcode, cpu->pc, cpu->index_register
+	);
+	*/
+	uint16_t addr = cpu->opcode & 0x0FFF;	 /* NNN */
+	uint8_t byte = cpu->opcode & 0x00FF;	 /*  kk */
+	uint8_t nibble = cpu->opcode & 0x000F;	 /*   N */
+	uint8_t x = (cpu->opcode & 0x0F00) >> 8; /* Final Result: 0x000N */
+	uint8_t y = (cpu->opcode & 0x00F0) >> 4; /* Final Result: 0x000N */
 
-	/* TODO: Use these variables. */
-	(void)byte;
 	(void)nibble;
-	(void)x;
-	(void)y;
 
 	switch (cpu->opcode & 0xF000) {
 	case 0x0000:
-		/* TODO: Manage 0x0FFF instructions */
+		switch (cpu->opcode & 0x000F) {
+		case 0x0000: /* 00E0: Clear display. */
+			opcode_CLS(cpu);
+			break;
+		case 0x000E: /* 00EE: Return from a subroutine. */
+			opcode_RET(cpu);
+			break;
+		default:
+			log_error("Unknown opcode: 0x%X", cpu->opcode);
+			return STATUS_ERROR;
+		}
 		break;
-	case 0xA000: /* ANNN: Set index register. */
-		next_pc = opcode_LDI(&cpu->index_register, addr);
+	case 0x1000: /* 1NNN: Set PC to addr. */
+		opcode_JMP(cpu, addr);
+		break;
+	case 0x2000: /* 2NNN: Call subroutine at addr. */
+		opcode_CALL(cpu, addr);
+		break;
+	case 0x3000: /* 3xkk: Skip next instruction if Vx == byte. */
+		opcode_SE(cpu, x, byte);
+		break;
+	case 0x4000: /* 4xkk: Skip next instruction if Vx != byte. */
+		opcode_SNE(cpu, x, byte);
+		break;
+	case 0x5000: /* 5xy0: Skip next instruction if Vx == Vy. */
+		opcode_SEREG(cpu, x, y);
+		break;
+	case 0x6000: /* 6xkk: Load byte to register Vx; */
+		opcode_LDIMM(cpu, x, byte);
+		break;
+	case 0xA000: /* ANNN: Set index register to byte. */
+		opcode_LDI(cpu, addr);
 		break;
 	default:
 		log_error("Unknown opcode: 0x%X", cpu->opcode);
+		return STATUS_ERROR;
 	}
-
-	cpu->pc += next_pc;
+	return STATUS_OK;
 }
 
 static void reset_cpu(cpu_t *cpu) {
 	/* System expects the application to be loaded at memory location 0x200 */
 	cpu->pc = 0x200;
-	cpu->opcode = 0;         /* Reset current opcode */
+	cpu->opcode = 0;		 /* Reset current opcode */
 	cpu->index_register = 0; /* Reset index register */
-	cpu->sp = 0;             /* Reset stack pointer */
+	cpu->sp = 0;			 /* Reset stack pointer */
 
 	/* Reset timers */
 	cpu->delay_timer = 0;

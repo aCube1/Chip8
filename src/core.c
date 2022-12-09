@@ -54,9 +54,10 @@ int8_t core_init(configs_t configs) {
 }
 
 int8_t core_run(void) {
+	int8_t status = STATUS_OK;
 	SDL_Event event;
 
-	while (Core.running) {
+	while (Core.running && status == STATUS_OK) {
 		while (SDL_PollEvent(&event)) {
 			switch (event.type) {
 			case SDL_QUIT:
@@ -65,7 +66,10 @@ int8_t core_run(void) {
 			}
 		}
 
-		cpu_emulate_cycle(&Core.cpu);
+		if (cpu_emulate_cycle(&Core.cpu) != STATUS_OK) {
+			log_error("Unable to emulate CPU cycle.");
+			status = STATUS_ERROR;
+		}
 
 		display_clear(&Core.display);
 		/* TODO: Render things here */
@@ -75,7 +79,7 @@ int8_t core_run(void) {
 	}
 
 	core_exit();
-	return STATUS_OK;
+	return status;
 }
 
 static void update_fps(void) {

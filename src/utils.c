@@ -7,6 +7,7 @@
 
 #define MAX_BUFFER_SIZE 512
 
+/* TODO: Read file in a better way. */
 int8_t get_file_content(file_t *file, FILE *origin) {
 	if (origin == NULL || origin == NULL) {
 		log_error("Unable read NULL file.");
