@@ -18,9 +18,9 @@ typedef struct {
 
 	/* Registers */
 	uint8_t v_register[REGISTERS_COUNT];
-	uint16_t index_register; /* Index register */
-	uint16_t pc;			 /* Points to the next instruction in memory to execute */
-	uint16_t sp;			 /* Points to the next empty spot in stack */
+	uint16_t I;	 /* Index register */
+	uint16_t PC; /* Points to the next instruction in memory to execute */
+	uint16_t SP; /* Points to the next empty spot in stack */
 
 	/* Screen has a total of 2048 pixels, and hold state of 0 or 1 */
 	uint8_t gfx[GFX_WIDTH * GFX_HEIGHT];

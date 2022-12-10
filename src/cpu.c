@@ -41,7 +41,7 @@ int8_t cpu_init(cpu_t *cpu) {
 int8_t cpu_emulate_cycle(cpu_t *cpu) {
 	update_timers(cpu);
 	/* Fetch opcode */
-	cpu->opcode = cpu->memory[cpu->pc] << 8 | cpu->memory[cpu->pc + 1];
+	cpu->opcode = cpu->memory[cpu->PC] << 8 | cpu->memory[cpu->PC + 1];
 
 	return cpu_decode_opcode(cpu);
 }
@@ -70,65 +70,37 @@ int8_t cpu_loadrom(cpu_t *cpu, const char *filepath) {
 }
 
 int8_t cpu_decode_opcode(cpu_t *cpu) {
-	/*
-	log_debug(
-		"OPCODE: %X | PC: %d | INDEX: %X", cpu->opcode, cpu->pc, cpu->index_register
-	);
-	*/
 	cpu->addr = cpu->opcode & 0x0FFF;
 	cpu->byte = cpu->opcode & 0x00FF;
 	cpu->nibble = cpu->opcode & 0x000F;
 	cpu->x = (cpu->opcode & 0x0F00) >> 8;
 	cpu->y = (cpu->opcode & 0x00F0) >> 4;
 
-	switch (cpu->opcode & 0xF000) {
-	case 0x0000:
-		switch (cpu->opcode & 0x000F) {
-		case 0x0000:
-			opcode_CLS(cpu);
-			break;
-		case 0x000E:
-			opcode_RET(cpu);
-			break;
-		default:
-			log_error("Unknown opcode: 0x%X", cpu->opcode);
-			return STATUS_ERROR;
+	for (size_t i = 0; i < MAX_OPCODES; i += 1) {
+		opcode_t opcode = opcodes[i];
+
+		if (opcode.handler == NULL) {
+			return STATUS_OK; /* If handler not exists, stop function. */
+		} else if ((cpu->opcode & opcode.mask) != opcode.opcode) {
+			continue; /* Go to next opcode if current opcode doesn't match. */
 		}
-		break;
-	case 0x1000:
-		opcode_JMP(cpu);
-		break;
-	case 0x2000:
-		opcode_CALL(cpu);
-		break;
-	case 0x3000:
-		opcode_SE(cpu);
-		break;
-	case 0x4000:
-		opcode_SNE(cpu);
-		break;
-	case 0x5000:
-		opcode_SEREG(cpu);
-		break;
-	case 0x6000:
-		opcode_LDIMM(cpu);
-		break;
-	case 0xA000:
-		opcode_LDI(cpu);
-		break;
-	default:
-		log_error("Unknown opcode: 0x%X", cpu->opcode);
-		return STATUS_ERROR;
+
+		/* Execute handler if current opcode match. */
+		opcode.handler(cpu);
+		log_debug("OPCODE: %04X", opcode.opcode);
+		return STATUS_OK;
 	}
-	return STATUS_OK;
+
+	log_error("Unknown opcode: 0x%X", cpu->opcode);
+	return STATUS_ERROR;
 }
 
 static void reset_cpu(cpu_t *cpu) {
 	/* System expects the application to be loaded at memory location 0x200 */
-	cpu->pc = 0x200;
-	cpu->opcode = 0;		 /* Reset current opcode */
-	cpu->index_register = 0; /* Reset index register */
-	cpu->sp = 0;			 /* Reset stack pointer */
+	cpu->PC = 0x200;
+	cpu->opcode = 0; /* Reset current opcode */
+	cpu->I = 0;		 /* Reset index register */
+	cpu->SP = 0;	 /* Reset stack pointer */
 
 	/* Reset timers */
 	cpu->delay_timer = 0;

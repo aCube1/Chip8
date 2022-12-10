@@ -96,7 +96,7 @@ static void set_resolution(int16_t *value, int16_t default_value, int32_t option
 		return;
 	}
 
-	if (new_resolution > DEFAULT_WIDTH) {
+	if (new_resolution > default_value) {
 		*value = (int16_t)new_resolution; /* WARN: Precision loss. */
 	} else {
 		log_warn("Resolution is lower than %d. Using default...", default_value);
