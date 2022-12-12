@@ -11,7 +11,7 @@ static void update_fps(void);
 static void core_exit(void);
 
 static struct {
-	bool running;
+	bool is_running;
 
 	display_t display;
 	cpu_t cpu;
@@ -37,7 +37,7 @@ int8_t core_init(configs_t configs) {
 		return STATUS_ERROR;
 	}
 
-	if (cpu_init(&Core.cpu) != STATUS_OK) {
+	if (cpu_init(&Core.cpu, Core.display.renderer) != STATUS_OK) {
 		log_fatal("Unable to init Chip-8 CPU!");
 		core_exit();
 		return STATUS_ERROR;
@@ -49,7 +49,7 @@ int8_t core_init(configs_t configs) {
 		return STATUS_ERROR;
 	}
 
-	Core.running = true;
+	Core.is_running = true;
 	return STATUS_OK;
 }
 
@@ -57,11 +57,11 @@ int8_t core_run(void) {
 	int8_t status = STATUS_OK;
 	SDL_Event event;
 
-	while (Core.running && status == STATUS_OK) {
+	while (Core.is_running && status == STATUS_OK) {
 		while (SDL_PollEvent(&event)) {
 			switch (event.type) {
 			case SDL_QUIT:
-				Core.running = false;
+				Core.is_running = false;
 				break;
 			}
 		}
@@ -71,8 +71,10 @@ int8_t core_run(void) {
 			status = STATUS_ERROR;
 		}
 
-		display_clear(&Core.display);
-		/* TODO: Render things here */
+		display_clear(&Core.display, &Core.is_running);
+		if (display_render(&Core.display, Core.cpu.screen, NULL, NULL) != STATUS_OK) {
+			Core.is_running = false;
+		}
 		display_update(&Core.display);
 
 		update_fps();
@@ -97,6 +99,7 @@ static void update_fps(void) {
 }
 
 static void core_exit(void) {
+	cpu_quit(&Core.cpu);
 	destroy_display(&Core.display);
 	log_info("Core exitted!");
 }

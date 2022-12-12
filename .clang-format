@@ -36,4 +36,5 @@ SpacesBeforeTrailingComments: 2
 ReferenceAlignment: Right
 PointerAlignment: Right
 
+PenaltyBreakAssignment: 32
 PenaltyReturnTypeOnItsOwnLine: 64
