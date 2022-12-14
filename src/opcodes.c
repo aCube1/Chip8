@@ -26,6 +26,7 @@ static void opcode_SUB(cpu_t *cpu);	   /* 0x8xy5 */
 static void opcode_SHR(cpu_t *cpu);	   /* 0x8xy6 */
 static void opcode_SUBN(cpu_t *cpu);   /* 0x8xy7 */
 static void opcode_SHL(cpu_t *cpu);	   /* 0x8xyE */
+static void opcode_SNEREG(cpu_t *cpu); /* 0x9xy0 */
 static void opcode_LDI(cpu_t *cpu);	   /* 0xAnnn */
 static void opcode_DRAW(cpu_t *cpu);   /* 0xDxyn */
 
@@ -50,9 +51,22 @@ const opcode_t opcodes[MAX_OPCODES] = {
 	{ opcode_SHR,    0x8006, 0xF00F },
 	{ opcode_SUBN,   0x8007, 0xF00F },
 	{ opcode_SHL,    0x800E, 0xF00F },
+	{ opcode_SNEREG, 0x9000, 0xF000 },
 	{ opcode_LDI,    0xA000, 0xF000 },
+	{ NULL,          0xB000, 0xF000 },
+	{ NULL,          0xC000, 0xF000 },
 	{ opcode_DRAW,   0xD000, 0xF000 },
-	{ NULL,          0x0000, 0x0000 },
+	{ NULL,          0xE09E, 0xF0FF },
+	{ NULL,          0xE0A1, 0xF0FF },
+	{ NULL,          0xF007, 0xF0FF },
+	{ NULL,          0xF00A, 0xF0FF },
+	{ NULL,          0xF015, 0xF0FF },
+	{ NULL,          0xF018, 0xF0FF },
+	{ NULL,          0xF01E, 0xF0FF },
+	{ NULL,          0xF029, 0xF0FF },
+	{ NULL,          0xF033, 0xF0FF },
+	{ NULL,          0xF055, 0xF0FF },
+	{ NULL,          0xF065, 0xF0FF },
 };
 /* clang-format on */
 
@@ -61,15 +75,13 @@ int8_t opcode_decode(cpu_t *cpu) {
 	for (size_t i = 0; i < MAX_OPCODES; i += 1) {
 		opcode_t opcode = opcodes[i];
 
-		if (opcode.handler == NULL) {
-			return STATUS_OK; /* If handler not exists, stop function. */
-		} else if ((cpu->opcode & opcode.mask) != opcode.opcode) {
-			continue; /* Go to next opcode if current opcode doesn't match. */
+		if ((cpu->opcode & opcode.mask) == opcode.opcode) {
+			/* Execute handler if current opcode match. */
+			if (opcode.handler != NULL) {
+				opcode.handler(cpu);
+			}
+			return STATUS_OK;
 		}
-
-		/* Execute handler if current opcode match. */
-		opcode.handler(cpu);
-		return STATUS_OK;
 	}
 
 	log_error("Unknown opcode: 0x%X", cpu->opcode);
@@ -112,7 +124,7 @@ static void opcode_CALL(cpu_t *cpu) {
 
 /* 0x3xkk - SE: Skip next instruction if Vx == kk.
  * The interpreter compares register Vx to kk, and if they are equal,
- * increments the program counter by 2.
+ * increments the program counter by 2, otherwise, increments the program counter by 4.
  */
 static void opcode_SE(cpu_t *cpu) {
 	const uint8_t val = cpu->byte;
@@ -155,7 +167,8 @@ static void opcode_LDIMM(cpu_t *cpu) {
 }
 
 /* 0x7xkk - ADDIMM: Set Vx = Vx + kk.
- * Adds the value kk to the value of register Vx, then stores the result in Vx.
+ * The interpreter adds the value kk to the value of register Vx,
+ * then stores the result in Vx.
  */
 static void opcode_ADDIMM(cpu_t *cpu) {
 	const uint8_t val = cpu->byte;
@@ -166,7 +179,7 @@ static void opcode_ADDIMM(cpu_t *cpu) {
 }
 
 /* 0x8xy0 - LDV: Set Vx = Vy.
- * Stores the value of register Vy in register Vx.
+ * The interpreter stores the value of register Vy in register Vx.
  */
 static void opcode_LDV(cpu_t *cpu) {
 	const uint8_t reg_y = cpu->v_register[cpu->y];
@@ -177,10 +190,9 @@ static void opcode_LDV(cpu_t *cpu) {
 }
 
 /* 0x8xy1 - OR: Set Vx = Vx OR Vy.
- * Performs a bitwise OR on the values of Vx and Vy, then stores the result in Vx.
- * A bitwise OR compares the corresponding bits from two values,
- * and if either bit is 1, then the same bit in the result is also 1.
- * Otherwise, it is 0.
+ * The interpreter performs a bitwise OR on the values of Vx and Vy, then stores the
+ * result in Vx. A bitwise OR compares the corresponding bits from two values, and if
+ * either bit is 1, then the same bit in the result is also 1. Otherwise, it is 0.
  */
 static void opcode_OR(cpu_t *cpu) {
 	const uint8_t reg_y = cpu->v_register[cpu->y];
@@ -191,10 +203,9 @@ static void opcode_OR(cpu_t *cpu) {
 }
 
 /* 0x8xy2 - AND: Set Vx = Vx AND Vy.
- * Performs a bitwise AND on the values of Vx and Vy, then stores the result in Vx.
- * A bitwise AND compares the corresponding bits from two values,
- * and if both bits are 1, then the same bit in the result is also 1.
- * Otherwise, it is 0.
+ * The interpreter performs a bitwise AND on the values of Vx and Vy, then stores the
+ * result in Vx. A bitwise AND compares the corresponding bits from two values, and if
+ * both bits are 1, then the same bit in the result is also 1. Otherwise, it is 0.
  */
 static void opcode_AND(cpu_t *cpu) {
 	const uint8_t reg_y = cpu->v_register[cpu->y];
@@ -205,10 +216,10 @@ static void opcode_AND(cpu_t *cpu) {
 }
 
 /* 0x8xy3 - XOR: Set Vx = Vx XOR Vy.
- * Performs a bitwise exclusive OR on the values of Vx and Vy, then stores the result in
- * Vx. An exclusive OR compares the corresponding bits from two values, and if the bits
- * are not both the same, then the corresponding bit in the result is set to 1. Otherwise,
- * it is 0.
+ * The interpreter erforms a bitwise exclusive OR on the values of Vx and Vy, then stores
+ * the result in Vx. An exclusive OR compares the corresponding bits from two values, and
+ * if the bits are not both the same, then the corresponding bit in the result is set
+ * to 1. Otherwise, it is 0.
  */
 static void opcode_XOR(cpu_t *cpu) {
 	const uint8_t reg_y = cpu->v_register[cpu->y];
@@ -219,7 +230,7 @@ static void opcode_XOR(cpu_t *cpu) {
 }
 
 /* 0x8xy4 - ADD: Set Vx = Vx + Vy, set VF = carry.
- * The values of Vx and Vy are added together.
+ * The interpreter adds Vy to the value of Vx, then store result in Vx
  * If the result is greater than 8 bits (i.e., > 255,) VF is set to 1, otherwise 0.
  * Only the lowest 8 bits of the result are kept, and stored in Vx.
  */
@@ -247,8 +258,7 @@ static void opcode_SUB(cpu_t *cpu) {
 }
 
 /* 0x8xy6 - SHR: Set Vx = Vx SHR 1.
- * If the least-significant bit of Vx is 1, then VF is set to 1, otherwise 0.
- * Then Vx is divided by 2.
+ * Interpreter set VF to the least-significant bit of Vx. Then Vx is divided by 2.
  * Vy is ignored.
  */
 static void opcode_SHR(cpu_t *cpu) {
@@ -272,12 +282,28 @@ static void opcode_SUBN(cpu_t *cpu) {
 	cpu->PC += NEXT_PC;
 }
 
+/* 0x8xyE - SHL: Set Vx = Vx SHL 1.
+ * Interpreter set VF to the most-significant bit of Vx. Then Vx is multiplied by 2.
+ * Vy is ignored.
+ */
 static void opcode_SHL(cpu_t *cpu) {
 	uint8_t *reg = &cpu->v_register[cpu->x];
 
 	cpu->v_register[0xF] = (*reg >> 7) & 1;
 	*reg <<= 1;
 	cpu->PC += NEXT_PC;
+}
+
+/* 0x9xy0 - SNEREG: Skip next instruction if Vx != Vy.
+ * Interpreter compare Vx and Vy, if they are not equal,
+ * the program counter is increased by 2,
+ * otherwise, the program counter is increased by 4.
+ */
+static void opcode_SNEREG(cpu_t *cpu) {
+	const uint8_t reg_x = cpu->v_register[cpu->x];
+	const uint8_t reg_y = cpu->v_register[cpu->y];
+
+	cpu->PC = reg_x != reg_y ? SKIP_PC : NEXT_PC;
 }
 
 /* 0xAnnn - LDI: Set I = nnn.
