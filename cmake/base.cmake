@@ -32,6 +32,6 @@ set_property(
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	add_definitions(-DUSE_DEBUG=1)
-elseif(CMAKE_BUILD_TYPE STREQUEAL "Release")
-	set(OPTIMIZATION_LEVEL "-Ofast")
+elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
+	set(OPTIMIZATION_LEVEL "-O3")
 endif()

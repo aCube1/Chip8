@@ -7,7 +7,7 @@
 
 typedef struct {
 	char rom_filepath[MAX_FILEPATH_SIZE];
-	int16_t width;  /* Window Width */
+	int16_t width;	/* Window Width */
 	int16_t height; /* Window Height */
 } configs_t;
 

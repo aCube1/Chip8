@@ -41,8 +41,6 @@ int8_t get_file_content(file_t *file, FILE *origin) {
 		}
 		file_content = new_content;
 
-		/* WARN: strncat is dangerous, switch to something better. */
-		// strncat(content, tmp_buffer, bytes_read);
 		/* Copy tmp_buffer content to file_content */
 		memcpy(
 			file_content + (file_size - bytes_read), tmp_buffer, bytes_read * sizeof(char)

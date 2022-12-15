@@ -76,7 +76,7 @@ int8_t cfg_parse_options(configs_t *config, int argc, char *argv[]) {
 	/* Get rom filepath. */
 	if (optind < argc) {
 		log_info("Rom filepath provided: %s", argv[optind]);
-		strncpy(config->rom_filepath, argv[optind], MAX_FILEPATH_SIZE);
+		strncpy(config->rom_filepath, argv[optind], MAX_FILEPATH_SIZE - 1);
 	} else {
 		log_error("No rom filepath provided!");
 		return STATUS_ERROR;

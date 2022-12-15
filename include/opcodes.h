@@ -16,7 +16,7 @@ typedef struct {
 } opcode_t;
 
 /* List of opcodes initialized in "opcodes.c" */
-extern const opcode_t opcodes[MAX_OPCODES];
+extern const opcode_t OPCODES[MAX_OPCODES];
 
 int8_t opcode_decode(cpu_t *cpu);
 

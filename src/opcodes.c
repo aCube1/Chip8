@@ -32,7 +32,7 @@ static void opcode_DRAW(cpu_t *cpu);   /* 0xDxyn */
 
 /* Generate OPCODES. */
 /* clang-format off */
-const opcode_t opcodes[MAX_OPCODES] = {
+const opcode_t OPCODES[MAX_OPCODES] = {
 	{ opcode_CLS,    0x00E0, 0xF0FF },
 	{ opcode_RET,    0x00EE, 0xF0FF },
 	{ opcode_JMP,    0x1000, 0xF000 },
@@ -73,7 +73,7 @@ const opcode_t opcodes[MAX_OPCODES] = {
 /* Decode current opcode using the mask and execute handler if match. */
 int8_t opcode_decode(cpu_t *cpu) {
 	for (size_t i = 0; i < MAX_OPCODES; i += 1) {
-		opcode_t opcode = opcodes[i];
+		opcode_t opcode = OPCODES[i];
 
 		if ((cpu->opcode & opcode.mask) == opcode.opcode) {
 			/* Execute handler if current opcode match. */
@@ -324,24 +324,31 @@ static void opcode_LDI(cpu_t *cpu) {
  * it wraps around to the opposite side of the screen.
  */
 static void opcode_DRAW(cpu_t *cpu) {
-	const uint8_t height = cpu->nibble;
+	const uint8_t x = cpu->v_register[cpu->x];
+	const uint8_t y = cpu->v_register[cpu->y];
+	const uint8_t n = cpu->nibble;
 
-	/* Wrap if going beyond screen boundaries. */
-	const uint8_t x_pos = cpu->v_register[cpu->x] % GFX_WIDTH;
-	const uint8_t y_pos = cpu->v_register[cpu->y] % GFX_HEIGHT;
+	/* Copy sprite from the memory. */
+	uint8_t sprite[n];
+	memcpy(sprite, &cpu->memory[cpu->I], n);
 
 	cpu->v_register[0xF] = 0; /* Set pixel erased flag to 0. */
-	for (uint32_t h = 0; h < height; h += 1) {
-		const uint8_t sprite_byte = cpu->memory[cpu->I + h];
+	for (uint8_t byte_index = 0; byte_index < n; byte_index += 1) {
+		for (uint8_t bit_index = 0; bit_index < 8; bit_index += 1) {
+			/* Calculate pixel position. Wrap if going beyond screen boundaries. */
+			const uint8_t x_pos = (x + bit_index) % GFX_WIDTH;
+			const uint8_t y_pos = (y + byte_index) % GFX_HEIGHT;
 
-		for (uint32_t w = 0; w < 8; w += 1) {
-			uint8_t pixel = (sprite_byte >> (7 - w)) & 1; /* Get pixel data. */
-			uint8_t *gfx_pixel = &cpu->gfx[(y_pos + h) * GFX_WIDTH + (x_pos + w)];
+			/* Calculate pixel value */
+			const uint8_t bit = (sprite[byte_index] >> (7 - bit_index)) & 1;
+			uint8_t *pixel = &cpu->gfx[x_pos + y_pos * GFX_WIDTH];
 
-			if (pixel == 0 && *gfx_pixel == 0) {
-				cpu->v_register[0xF] = 1; /* Pixel erased. Set flag to 1. */
+			/* If pixel is ereased, set flag to 1. */
+			if (bit == 1 && *pixel == 1) {
+				cpu->v_register[0xF] = 1;
 			}
-			*gfx_pixel ^= pixel; /* Effectively XOR with the sprite pixel */
+
+			*pixel ^= bit; /* Effectively XOR with the sprite pixel */
 		}
 	}
 

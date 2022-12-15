@@ -73,7 +73,8 @@ int8_t core_run(void) {
 
 		display_clear(&Core.display, &Core.is_running);
 		if (display_render(&Core.display, Core.cpu.screen, NULL, NULL) != STATUS_OK) {
-			Core.is_running = false;
+			log_error("Unable to render CPU screen.");
+			status = STATUS_ERROR;
 		}
 		display_update(&Core.display);
 

@@ -19,9 +19,9 @@
 #define BACK_G 0x00
 #define BACK_B 0x00
 /* Foreground */
-#define FORE_R 0x00
-#define FORE_G 0x64
-#define FORE_B 0x00
+#define FORE_R 0xFF
+#define FORE_G 0xFF
+#define FORE_B 0xFF
 
 /* File management. */
 typedef struct {

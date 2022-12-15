@@ -13,9 +13,6 @@ static SDL_RendererFlags renderer_flags = SDL_RENDERER_ACCELERATED |
 										  SDL_RENDERER_PRESENTVSYNC;
 
 int8_t create_display(display_t *display, int16_t width, int16_t height) {
-	display->window = NULL;
-	display->renderer = NULL;
-
 	display->window = SDL_CreateWindow(
 		TITLE, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, window_flags
 	);
@@ -50,8 +47,7 @@ void destroy_display(display_t *display) {
 }
 
 int8_t surface_set_pixel(SDL_Surface *surface, uint32_t x, uint32_t y, uint32_t color) {
-	bool must_lock = SDL_MUSTLOCK(surface) == SDL_TRUE;
-	if (must_lock && SDL_LockSurface(surface) < 0) {
+	if (SDL_MUSTLOCK(surface) == SDL_TRUE && SDL_LockSurface(surface) < 0) {
 		log_error("Unable to lock surface: %s", SDL_GetError());
 		return STATUS_ERROR;
 	}
@@ -60,9 +56,7 @@ int8_t surface_set_pixel(SDL_Surface *surface, uint32_t x, uint32_t y, uint32_t 
 	uint32_t *pixel = (uint32_t *)((uint8_t *)surface->pixels + offset);
 	*pixel = color;
 
-	if (must_lock) {
-		SDL_UnlockSurface(surface);
-	}
+	SDL_UnlockSurface(surface);
 
 	return STATUS_OK;
 }
