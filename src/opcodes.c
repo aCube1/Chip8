@@ -344,7 +344,7 @@ static void opcode_DRAW(cpu_t *cpu) {
 			uint8_t *pixel = &cpu->gfx[x_pos + y_pos * GFX_WIDTH];
 
 			/* If pixel is ereased, set flag to 1. */
-			if (bit == 1 && *pixel == 1) {
+			if (bit == 0x1 && *pixel == 0x1) {
 				cpu->v_register[0xF] = 1;
 			}
 

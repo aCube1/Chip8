@@ -1,5 +1,6 @@
 #include "configs.h"
 
+#include "argparse.h"
 #include "log.h"
 #include "utils.h"
 
@@ -7,98 +8,47 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* TODO: Windows version. */
-#if defined(__unix__) || defined(__unix) || defined(unix)
-#	include <getopt.h>
-#else
-#	error "Unable to get getopt.h header."
-#endif
-
 enum {
 	LOG_ALL = -1,
 	LOG_QUIET = 0,
 };
 
-static int32_t log_mode = LOG_ALL;
-
-static struct option long_options[] = {
-	{"quiet", no_argument, &log_mode, LOG_QUIET},
-	{"width", required_argument, NULL, 'w'},
-	{"height", required_argument, NULL, 'h'},
-	{NULL, 0, NULL, 0},
+static const char *const usages[] = {
+	"Chip8 [options] <path-to-rom>",
+	NULL,
 };
 
-static const char short_options[] = "w:h:";
+#ifdef USE_DEBUG
+static int32_t log_mode = LOG_ALL;
+#else
+static int32_t log_mode = LOG_QUIET;
+#endif
 
-static void set_resolution(int16_t *value, int16_t default_value, int32_t option_index);
+void cfg_parse_options(configs_t *config, int argc, const char *argv[]) {
+	struct argparse argparse;
+	struct argparse_option options[] = {
+		OPT_HELP(),
+		OPT_GROUP("Basic arguments."),
+		OPT_BOOLEAN(0, "quiet", &log_mode, "Disable terminal output", NULL, LOG_QUIET, 0),
+		OPT_BOOLEAN(0, "verbose", &log_mode, "Enable terminal output", NULL, LOG_ALL, 0),
+		OPT_GROUP("Window arguments."),
+		OPT_INTEGER('w', "width", &config->width, "Set window width.", NULL, 0, 0),
+		OPT_INTEGER('h', "height", &config->height, "Set window height", NULL, 0, 0),
+		OPT_END(),
+	};
 
-int8_t cfg_parse_options(configs_t *config, int argc, char *argv[]) {
-	(void)config;
-	int32_t opt = 0;
-	int32_t option_index = 0;
+	argparse_init(&argparse, options, usages, ARGPARSE_STOP_AT_NON_OPTION);
+	argc = argparse_parse(&argparse, argc, argv);
 
-	while (opt != -1) {
-		opt = getopt_long(argc, argv, short_options, long_options, &option_index);
+	/* Set logging mode. */
+	log_set_quiet(log_mode == LOG_QUIET);
 
-		switch (opt) {
-		case 0:
-			/* Do nothing if option set a flag. */
-			if (long_options[option_index].flag != NULL) {
-				break;
-			}
-
-			/* Trace option. */
-			if (optarg == NULL) {
-				log_trace("Unknown option %s.", long_options[option_index].name);
-			} else {
-				log_trace(
-					"Unknown option %s with arg %s", long_options[option_index].name,
-					optarg
-				);
-			}
-			break;
-		case 'w':
-			set_resolution(&config->width, DEFAULT_WIDTH, option_index);
-			break;
-		case 'h':
-			set_resolution(&config->height, DEFAULT_HEIGHT, option_index);
-			break;
-		case '?':
-			log_error("Unable to recognize option: %s", long_options[option_index]);
-			return STATUS_ERROR;
-		}
-	}
-
-	if (log_mode == LOG_QUIET) {
-		log_set_quiet(true);
-	}
-
-	/* Get rom filepath. */
-	if (optind < argc) {
-		log_info("Rom filepath provided: %s", argv[optind]);
-		strncpy(config->rom_filepath, argv[optind], MAX_FILEPATH_SIZE - 1);
-	} else {
-		log_error("No rom filepath provided!");
-		return STATUS_ERROR;
-	}
-
-	return STATUS_OK;
-}
-
-static void set_resolution(int16_t *value, int16_t default_value, int32_t option_index) {
-	int32_t new_resolution = strtol(optarg, NULL, 0);
-
-	if (new_resolution == 0L || errno == ERANGE) {
-		log_error(
-			"Unable to get resolution from option %s with arg %s.",
-			long_options[option_index].name, optarg
-		);
+	/* Show usage if no arguments. */
+	if (argc == 0) {
+		argparse_usage(&argparse);
 		return;
 	}
 
-	if (new_resolution > default_value) {
-		*value = (int16_t)new_resolution; /* WARN: Precision loss. */
-	} else {
-		log_warn("Resolution is lower than %d. Using default...", default_value);
-	}
+	/* Copy filepath to config struct. */
+	memcpy(config->rom_filepath, argv[0], MAX_FILEPATH_SIZE - 1);
 }

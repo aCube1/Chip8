@@ -26,7 +26,6 @@ static double fps_timer = 0.0;
 
 int8_t core_init(configs_t configs) {
 	uint32_t init_flags = SDL_INIT_EVERYTHING;
-
 	if (SDL_Init(init_flags) < 0) {
 		log_fatal("Unable to init SDL2: %s", SDL_GetError());
 		return STATUS_ERROR;

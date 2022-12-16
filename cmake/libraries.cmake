@@ -16,10 +16,12 @@ function(link_default_libraries target)
     ${target}
     PRIVATE
       ${VENDOR_DIR}/log/log.c
+      ${VENDOR_DIR}/argparse/argparse.c
   )
   target_include_directories(
     ${target}
     PRIVATE
       ${VENDOR_DIR}/log
+      ${VENDOR_DIR}/argparse
   )
 endfunction()
