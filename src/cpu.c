@@ -74,9 +74,9 @@ int8_t cpu_emulate_cycle(cpu_t *cpu) {
 void cpu_reset(cpu_t *cpu) {
 	/* System expects the application to be loaded at memory location 0x200 */
 	cpu->PC = 0x200;
-	cpu->opcode = 0; /* Reset current opcode */
-	cpu->I = 0;		 /* Reset index register */
-	cpu->SP = 0;	 /* Reset stack pointer */
+	cpu->opcode = 0; /* Reset current opcode. */
+	cpu->I = 0;		 /* Reset index register. */
+	cpu->SP = 0;	 /* Reset stack pointer. */
 
 	/* Reset timers */
 	cpu->delay_timer = 0;

@@ -7,7 +7,7 @@
 
 #define MAX_OPCODES 36
 
-typedef void (*opcode_handler_t)(cpu_t *cpu);
+typedef uint16_t (*opcode_handler_t)(cpu_t *cpu);
 
 typedef struct {
 	opcode_handler_t handler;

@@ -1,86 +1,97 @@
 #include "opcodes.h"
 
+#include "cpu.h"
 #include "log.h"
 #include "utils.h"
 
 #include <string.h>
 
-#define NEXT_PC 2 /* Go to next instruction. */
-#define SKIP_PC 4 /* Skip next instruction. */
+#define NEXT_PC cpu->PC + 2 /* Go to next instruction. */
+#define SKIP_PC cpu->PC + 4 /* Skip next instruction. */
 
-static void opcode_CLS(cpu_t *cpu);	   /* 0x00E0 */
-static void opcode_RET(cpu_t *cpu);	   /* 0x00EE */
-static void opcode_JMP(cpu_t *cpu);	   /* 0x1nnn */
-static void opcode_CALL(cpu_t *cpu);   /* 0x2nnn */
-static void opcode_SE(cpu_t *cpu);	   /* 0x3xkk */
-static void opcode_SNE(cpu_t *cpu);	   /* 0x4xkk */
-static void opcode_SEREG(cpu_t *cpu);  /* 0x5xy0 */
-static void opcode_LDIMM(cpu_t *cpu);  /* 0x6xkk */
-static void opcode_ADDIMM(cpu_t *cpu); /* 0x7xkk */
-static void opcode_LDV(cpu_t *cpu);	   /* 0x8xy0 */
-static void opcode_OR(cpu_t *cpu);	   /* 0x8xy1 */
-static void opcode_AND(cpu_t *cpu);	   /* 0x8xy2 */
-static void opcode_XOR(cpu_t *cpu);	   /* 0x8xy3 */
-static void opcode_ADD(cpu_t *cpu);	   /* 0x8xy4 */
-static void opcode_SUB(cpu_t *cpu);	   /* 0x8xy5 */
-static void opcode_SHR(cpu_t *cpu);	   /* 0x8xy6 */
-static void opcode_SUBN(cpu_t *cpu);   /* 0x8xy7 */
-static void opcode_SHL(cpu_t *cpu);	   /* 0x8xyE */
-static void opcode_SNEREG(cpu_t *cpu); /* 0x9xy0 */
-static void opcode_LDI(cpu_t *cpu);	   /* 0xAnnn */
-static void opcode_DRAW(cpu_t *cpu);   /* 0xDxyn */
+/* Set true if error occurried. */
+static bool has_error = false;
+
+static uint16_t opcode_CLS(cpu_t *cpu);		/* 0x00E0 */
+static uint16_t opcode_RET(cpu_t *cpu);		/* 0x00EE */
+static uint16_t opcode_JMP(cpu_t *cpu);		/* 0x1nnn */
+static uint16_t opcode_CALL(cpu_t *cpu);	/* 0x2nnn */
+static uint16_t opcode_SE(cpu_t *cpu);		/* 0x3xkk */
+static uint16_t opcode_SNE(cpu_t *cpu);		/* 0x4xkk */
+static uint16_t opcode_SEREG(cpu_t *cpu);	/* 0x5xy0 */
+static uint16_t opcode_LDIMM(cpu_t *cpu);	/* 0x6xkk */
+static uint16_t opcode_ADDIMM(cpu_t *cpu);	/* 0x7xkk */
+static uint16_t opcode_LDV(cpu_t *cpu);		/* 0x8xy0 */
+static uint16_t opcode_OR(cpu_t *cpu);		/* 0x8xy1 */
+static uint16_t opcode_AND(cpu_t *cpu);		/* 0x8xy2 */
+static uint16_t opcode_XOR(cpu_t *cpu);		/* 0x8xy3 */
+static uint16_t opcode_ADD(cpu_t *cpu);		/* 0x8xy4 */
+static uint16_t opcode_SUB(cpu_t *cpu);		/* 0x8xy5 */
+static uint16_t opcode_SHR(cpu_t *cpu);		/* 0x8xy6 */
+static uint16_t opcode_SUBN(cpu_t *cpu);	/* 0x8xy7 */
+static uint16_t opcode_SHL(cpu_t *cpu);		/* 0x8xyE */
+static uint16_t opcode_SNEREG(cpu_t *cpu);	/* 0x9xy0 */
+static uint16_t opcode_LDI(cpu_t *cpu);		/* 0xAnnn */
+static uint16_t opcode_JMPREG(cpu_t *cpu);	/* 0xBnnn */
+static uint16_t opcode_RAND(cpu_t *cpu);	/* 0xCxkk */
+static uint16_t opcode_DRAW(cpu_t *cpu);	/* 0xDxyn */
+static uint16_t opcode_SKEY(cpu_t *cpu);	/* 0xEx9E */
+static uint16_t opcode_SNKEY(cpu_t *cpu);	/* 0xExA1 */
+static uint16_t opcode_LDDELAY(cpu_t *cpu); /* 0xFx07 */
+static uint16_t opcode_WAITKEY(cpu_t *cpu); /* 0xFx0A */
 
 /* Generate OPCODES. */
 /* clang-format off */
 const opcode_t OPCODES[MAX_OPCODES] = {
-	{ opcode_CLS,    0x00E0, 0xF0FF },
-	{ opcode_RET,    0x00EE, 0xF0FF },
-	{ opcode_JMP,    0x1000, 0xF000 },
-	{ opcode_CALL,   0x2000, 0xF000 },
-	{ opcode_SE,     0x3000, 0xF000 },
-	{ opcode_SNE,    0x4000, 0xF000 },
-	{ opcode_SEREG,  0x5000, 0xF00F },
-	{ opcode_LDIMM,  0x6000, 0xF000 },
-	{ opcode_ADDIMM, 0x7000, 0xF000 },
-	{ opcode_LDV,    0x8000, 0xF00F },
-	{ opcode_OR,     0x8001, 0xF00F },
-	{ opcode_AND,    0x8002, 0xF00F },
-	{ opcode_XOR,    0x8003, 0xF00F },
-	{ opcode_ADD,    0x8004, 0xF00F },
-	{ opcode_SUB,    0x8005, 0xF00F },
-	{ opcode_SHR,    0x8006, 0xF00F },
-	{ opcode_SUBN,   0x8007, 0xF00F },
-	{ opcode_SHL,    0x800E, 0xF00F },
-	{ opcode_SNEREG, 0x9000, 0xF000 },
-	{ opcode_LDI,    0xA000, 0xF000 },
-	{ NULL,          0xB000, 0xF000 },
-	{ NULL,          0xC000, 0xF000 },
-	{ opcode_DRAW,   0xD000, 0xF000 },
-	{ NULL,          0xE09E, 0xF0FF },
-	{ NULL,          0xE0A1, 0xF0FF },
-	{ NULL,          0xF007, 0xF0FF },
-	{ NULL,          0xF00A, 0xF0FF },
-	{ NULL,          0xF015, 0xF0FF },
-	{ NULL,          0xF018, 0xF0FF },
-	{ NULL,          0xF01E, 0xF0FF },
-	{ NULL,          0xF029, 0xF0FF },
-	{ NULL,          0xF033, 0xF0FF },
-	{ NULL,          0xF055, 0xF0FF },
-	{ NULL,          0xF065, 0xF0FF },
+	{ opcode_CLS,     0x00E0, 0xF0FF },
+	{ opcode_RET,     0x00EE, 0xF0FF },
+	{ opcode_JMP,     0x1000, 0xF000 },
+	{ opcode_CALL,    0x2000, 0xF000 },
+	{ opcode_SE,      0x3000, 0xF000 },
+	{ opcode_SNE,     0x4000, 0xF000 },
+	{ opcode_SEREG,   0x5000, 0xF00F },
+	{ opcode_LDIMM,   0x6000, 0xF000 },
+	{ opcode_ADDIMM,  0x7000, 0xF000 },
+	{ opcode_LDV,     0x8000, 0xF00F },
+	{ opcode_OR,      0x8001, 0xF00F },
+	{ opcode_AND,     0x8002, 0xF00F },
+	{ opcode_XOR,     0x8003, 0xF00F },
+	{ opcode_ADD,     0x8004, 0xF00F },
+	{ opcode_SUB,     0x8005, 0xF00F },
+	{ opcode_SHR,     0x8006, 0xF00F },
+	{ opcode_SUBN,    0x8007, 0xF00F },
+	{ opcode_SHL,     0x800E, 0xF00F },
+	{ opcode_SNEREG,  0x9000, 0xF000 },
+	{ opcode_LDI,     0xA000, 0xF000 },
+	{ opcode_JMPREG,  0xB000, 0xF000 },
+	{ opcode_RAND,    0xC000, 0xF000 },
+	{ opcode_DRAW,    0xD000, 0xF000 },
+	{ opcode_SKEY,    0xE09E, 0xF0FF },
+	{ opcode_SNKEY,   0xE0A1, 0xF0FF },
+	{ opcode_LDDELAY, 0xF007, 0xF0FF },
+	{ opcode_WAITKEY, 0xF00A, 0xF0FF },
+	{ NULL,           0xF015, 0xF0FF },
+	{ NULL,           0xF018, 0xF0FF },
+	{ NULL,           0xF01E, 0xF0FF },
+	{ NULL,           0xF029, 0xF0FF },
+	{ NULL,           0xF033, 0xF0FF },
+	{ NULL,           0xF055, 0xF0FF },
+	{ NULL,           0xF065, 0xF0FF },
 };
 /* clang-format on */
 
 /* Decode current opcode using the mask and execute handler if match. */
 int8_t opcode_decode(cpu_t *cpu) {
+	has_error = false; /* Reset error. */
 	for (size_t i = 0; i < MAX_OPCODES; i += 1) {
 		opcode_t opcode = OPCODES[i];
 
 		if ((cpu->opcode & opcode.mask) == opcode.opcode) {
 			/* Execute handler if current opcode match. */
 			if (opcode.handler != NULL) {
-				opcode.handler(cpu);
+				cpu->PC = opcode.handler(cpu);
 			}
-			return STATUS_OK;
+			return has_error ? STATUS_ERROR : STATUS_OK;
 		}
 	}
 
@@ -89,104 +100,118 @@ int8_t opcode_decode(cpu_t *cpu) {
 }
 
 /* 0x00E0 - CLS: Clear display. */
-static void opcode_CLS(cpu_t *cpu) {
+static uint16_t opcode_CLS(cpu_t *cpu) {
 	memset(cpu->gfx, 0, GFX_WIDTH * GFX_HEIGHT * sizeof(uint8_t));
 	cpu->gfx_changed = true;
-	cpu->PC += NEXT_PC;
+	return NEXT_PC;
 }
 
 /* 0x00EE - RET: Return from a subroutine.
  * The interpreter sets the program counter to the address at the top of the stack,
  * then subtracts 1 from the stack pointer.
+ * WARN: If stack pointer is <= 0, the instruction is skipped.
  */
-static void opcode_RET(cpu_t *cpu) {
+static uint16_t opcode_RET(cpu_t *cpu) {
+	if (cpu->SP <= 0) {
+		/* Skip instruction and set has_error to true.*/
+		has_error = true;
+		return NEXT_PC;
+	}
+
 	cpu->SP -= 1;
-	cpu->PC = cpu->stack[cpu->SP] + 2;
+	return cpu->stack[cpu->SP] + 2;
 }
 
 /* 0x1nnn - JMP: Jump to location nnn.
  * The interpreter sets the program counter to nnn.
  */
-static void opcode_JMP(cpu_t *cpu) {
-	cpu->PC = cpu->addr;
+static uint16_t opcode_JMP(cpu_t *cpu) {
+	return cpu->addr;
 }
 
 /* 0x2nnn - CALL: Call subroutine at nnn.
  * The interpreter increments the stack pointer,
  * then puts the current PC on the top of the stack.
  * The PC is then set to nnn.
+ * WARN: If stack pointer is <= 0, the instruction is skipped.
  */
-static void opcode_CALL(cpu_t *cpu) {
+static uint16_t opcode_CALL(cpu_t *cpu) {
+	if (cpu->PC >= STACK_SIZE) {
+		/* Skip instruction and set has_error to true. */
+		has_error = true;
+		return NEXT_PC;
+	}
+
 	cpu->stack[cpu->SP] = cpu->PC;
 	cpu->SP += 1;
-	cpu->PC = cpu->addr;
+	return cpu->addr;
 }
 
 /* 0x3xkk - SE: Skip next instruction if Vx == kk.
  * The interpreter compares register Vx to kk, and if they are equal,
  * increments the program counter by 2, otherwise, increments the program counter by 4.
  */
-static void opcode_SE(cpu_t *cpu) {
+static uint16_t opcode_SE(cpu_t *cpu) {
 	const uint8_t val = cpu->byte;
 	const uint8_t reg = cpu->v_register[cpu->x];
 
-	cpu->PC = reg == val ? SKIP_PC : NEXT_PC;
+	return reg == val ? SKIP_PC : NEXT_PC;
 }
 
 /* 0x4xkk - SNE: Skip next instruction is Vx != kk.
  * The interpreter compares register Vx to kk, and if they are NOT equal,
  * increments the program counter by 2.
  */
-static void opcode_SNE(cpu_t *cpu) {
+static uint16_t opcode_SNE(cpu_t *cpu) {
 	const uint8_t val = cpu->byte;
 	const uint8_t reg = cpu->v_register[cpu->x];
 
-	cpu->PC = reg != val ? SKIP_PC : NEXT_PC;
+	return reg != val ? SKIP_PC : NEXT_PC;
 }
 
 /* 0x5xy0 - SEREG: Skip next instruction if Vx == Vy.
  * The interpreter compares register Vx to register Vy, and if they are equal,
  * increments the program counter by 2.
  */
-static void opcode_SEREG(cpu_t *cpu) {
+static uint16_t opcode_SEREG(cpu_t *cpu) {
 	const uint8_t reg_x = cpu->v_register[cpu->x];
 	const uint8_t reg_y = cpu->v_register[cpu->y];
 
-	cpu->PC = reg_x == reg_y ? SKIP_PC : NEXT_PC;
+	return reg_x == reg_y ? SKIP_PC : NEXT_PC;
 }
 
 /* 0x6xkk - LDIMM: Set Vx = kk.
  * The interpreter puts the value kk into register Vx.
  */
-static void opcode_LDIMM(cpu_t *cpu) {
+static uint16_t opcode_LDIMM(cpu_t *cpu) {
 	const uint8_t val = cpu->byte;
 	uint8_t *reg = &cpu->v_register[cpu->x];
 
 	*reg = val;
-	cpu->PC += NEXT_PC;
+	return NEXT_PC;
 }
 
 /* 0x7xkk - ADDIMM: Set Vx = Vx + kk.
  * The interpreter adds the value kk to the value of register Vx,
  * then stores the result in Vx.
  */
-static void opcode_ADDIMM(cpu_t *cpu) {
+static uint16_t opcode_ADDIMM(cpu_t *cpu) {
 	const uint8_t val = cpu->byte;
 	uint8_t *reg = &cpu->v_register[cpu->x];
 
 	*reg += val;
-	cpu->PC += NEXT_PC;
+	return NEXT_PC;
 }
 
 /* 0x8xy0 - LDV: Set Vx = Vy.
  * The interpreter stores the value of register Vy in register Vx.
  */
-static void opcode_LDV(cpu_t *cpu) {
+static uint16_t opcode_LDV(cpu_t *cpu) {
 	const uint8_t reg_y = cpu->v_register[cpu->y];
 	uint8_t *reg_x = &cpu->v_register[cpu->x];
 
 	*reg_x = reg_y;
-	cpu->PC += NEXT_PC;
+	return NEXT_PC;
 }
 
 /* 0x8xy1 - OR: Set Vx = Vx OR Vy.
@@ -194,12 +219,12 @@ static void opcode_LDV(cpu_t *cpu) {
  * result in Vx. A bitwise OR compares the corresponding bits from two values, and if
  * either bit is 1, then the same bit in the result is also 1. Otherwise, it is 0.
  */
-static void opcode_OR(cpu_t *cpu) {
+static uint16_t opcode_OR(cpu_t *cpu) {
 	const uint8_t reg_y = cpu->v_register[cpu->y];
 	uint8_t *reg_x = &cpu->v_register[cpu->x];
 
 	*reg_x |= reg_y;
-	cpu->PC += NEXT_PC;
+	return NEXT_PC;
 }
 
 /* 0x8xy2 - AND: Set Vx = Vx AND Vy.
@@ -207,12 +232,12 @@ static void opcode_OR(cpu_t *cpu) {
  * result in Vx. A bitwise AND compares the corresponding bits from two values, and if
  * both bits are 1, then the same bit in the result is also 1. Otherwise, it is 0.
  */
-static void opcode_AND(cpu_t *cpu) {
+static uint16_t opcode_AND(cpu_t *cpu) {
 	const uint8_t reg_y = cpu->v_register[cpu->y];
 	uint8_t *reg_x = &cpu->v_register[cpu->x];
 
 	*reg_x &= reg_y;
-	cpu->PC += NEXT_PC;
+	return NEXT_PC;
 }
 
 /* 0x8xy3 - XOR: Set Vx = Vx XOR Vy.
@@ -221,12 +246,12 @@ static void opcode_AND(cpu_t *cpu) {
  * if the bits are not both the same, then the corresponding bit in the result is set
  * to 1. Otherwise, it is 0.
  */
-static void opcode_XOR(cpu_t *cpu) {
+static uint16_t opcode_XOR(cpu_t *cpu) {
 	const uint8_t reg_y = cpu->v_register[cpu->y];
 	uint8_t *reg_x = &cpu->v_register[cpu->x];
 
 	*reg_x ^= reg_y;
-	cpu->PC += NEXT_PC;
+	return NEXT_PC;
 }
 
 /* 0x8xy4 - ADD: Set Vx = Vx + Vy, set VF = carry.
@@ -234,64 +259,64 @@ static void opcode_XOR(cpu_t *cpu) {
  * If the result is greater than 8 bits (i.e., > 255,) VF is set to 1, otherwise 0.
  * Only the lowest 8 bits of the result are kept, and stored in Vx.
  */
-static void opcode_ADD(cpu_t *cpu) {
+static uint16_t opcode_ADD(cpu_t *cpu) {
 	const uint8_t reg_y = cpu->v_register[cpu->y];
 	uint8_t *reg_x = &cpu->v_register[cpu->x];
 	uint16_t val = *reg_x + reg_y;
 
 	cpu->v_register[0xF] = val > UINT8_MAX; /* Set carry flag. */
 	*reg_x += reg_y;
-	cpu->PC += NEXT_PC;
+	return NEXT_PC;
 }
 
 /* 0x8xy5 - SUB: Set Vx = Vx - Vy, set VF = NOT borrow.
  * If Vx > Vy, then VF is set to 1, otherwise 0.
  * Then Vy is subtracted from Vx, and the results stored in Vx.
  */
-static void opcode_SUB(cpu_t *cpu) {
+static uint16_t opcode_SUB(cpu_t *cpu) {
 	const uint8_t reg_y = cpu->v_register[cpu->y];
 	uint8_t *reg_x = &cpu->v_register[cpu->x];
 
 	cpu->v_register[0xF] = *reg_x > reg_y; /* Set not borrow. */
 	*reg_x -= reg_y;
-	cpu->PC += NEXT_PC;
+	return NEXT_PC;
 }
 
 /* 0x8xy6 - SHR: Set Vx = Vx SHR 1.
  * Interpreter set VF to the least-significant bit of Vx. Then Vx is divided by 2.
  * Vy is ignored.
  */
-static void opcode_SHR(cpu_t *cpu) {
+static uint16_t opcode_SHR(cpu_t *cpu) {
 	uint8_t *reg = &cpu->v_register[cpu->x];
 
 	cpu->v_register[0xF] = *reg & 1;
 	*reg >>= 1;
-	cpu->PC += NEXT_PC;
+	return NEXT_PC;
 }
 
 /* 0x8xy7 - SUBN: Set Vx = Vy - Vx, set VF = NOT borrow.
  * If Vy > Vx, then VF is set to 1, otherwise 0.
  * Then Vx is subtracted from Vy, and the results stored in Vx.
  */
-static void opcode_SUBN(cpu_t *cpu) {
+static uint16_t opcode_SUBN(cpu_t *cpu) {
 	const uint8_t reg_y = cpu->v_register[cpu->y];
 	uint8_t *reg_x = &cpu->v_register[cpu->x];
 
 	cpu->v_register[0xF] = *reg_x < reg_y; /* Set not borrow. */
 	*reg_x = reg_y - (*reg_x);
-	cpu->PC += NEXT_PC;
+	return NEXT_PC;
 }
 
 /* 0x8xyE - SHL: Set Vx = Vx SHL 1.
  * Interpreter set VF to the most-significant bit of Vx. Then Vx is multiplied by 2.
  * Vy is ignored.
  */
-static void opcode_SHL(cpu_t *cpu) {
+static uint16_t opcode_SHL(cpu_t *cpu) {
 	uint8_t *reg = &cpu->v_register[cpu->x];
 
 	cpu->v_register[0xF] = (*reg >> 7) & 1;
 	*reg <<= 1;
-	cpu->PC += NEXT_PC;
+	return NEXT_PC;
 }
 
 /* 0x9xy0 - SNEREG: Skip next instruction if Vx != Vy.
@@ -299,19 +324,40 @@ static void opcode_SHL(cpu_t *cpu) {
  * the program counter is increased by 2,
  * otherwise, the program counter is increased by 4.
  */
-static void opcode_SNEREG(cpu_t *cpu) {
+static uint16_t opcode_SNEREG(cpu_t *cpu) {
 	const uint8_t reg_x = cpu->v_register[cpu->x];
 	const uint8_t reg_y = cpu->v_register[cpu->y];
 
-	cpu->PC = reg_x != reg_y ? SKIP_PC : NEXT_PC;
+	return reg_x != reg_y ? SKIP_PC : NEXT_PC;
 }
 
 /* 0xAnnn - LDI: Set I = nnn.
  * The value of register I is set to nnn.
  */
-static void opcode_LDI(cpu_t *cpu) {
+static uint16_t opcode_LDI(cpu_t *cpu) {
 	cpu->I = cpu->addr;
-	cpu->PC += NEXT_PC;
+	return NEXT_PC;
+}
+
+/* 0xBnnn - JMPREG: Jump to location nnn + V0.
+ * Interpreter set PC to nnn plus the value of V0.
+ */
+static uint16_t opcode_JMPREG(cpu_t *cpu) {
+	const uint8_t addr = cpu->addr;
+
+	return addr + cpu->v_register[0];
+}
+
+/* 0xCxkk - RAND: Set Vx = random_byte AND kk;
+ * The interpreter generate random number from 0 to 255,
+ * which is then ANDed with the value of kk. The results are stored in Vx.
+ */
+static uint16_t opcode_RAND(cpu_t *cpu) {
+	const uint8_t byte = cpu->byte;
+	uint8_t *reg = &cpu->v_register[cpu->x];
+
+	*reg = (rand() % 256) & byte;
+	return NEXT_PC;
 }
 
 /* 0xDxyn - DRAW: Display n-byte sprite starting at memory location I at (Vx, Vy),
@@ -323,7 +369,7 @@ static void opcode_LDI(cpu_t *cpu) {
  * If the sprite is positioned so part of it is outside the coordinates of the display,
  * it wraps around to the opposite side of the screen.
  */
-static void opcode_DRAW(cpu_t *cpu) {
+static uint16_t opcode_DRAW(cpu_t *cpu) {
 	const uint8_t x = cpu->v_register[cpu->x];
 	const uint8_t y = cpu->v_register[cpu->y];
 	const uint8_t n = cpu->nibble;
@@ -353,5 +399,52 @@ static void opcode_DRAW(cpu_t *cpu) {
 	}
 
 	cpu->gfx_changed = true;
-	cpu->PC += NEXT_PC;
+	return NEXT_PC;
+}
+
+/* 0xEx9E - SKEY: Skip next instruction if key with the value of Vx is pressed.
+ * Checks the keyboard state , and if the key corresponding to the value of Vx is
+ * currently in the down position, PC is increased by 2, otherwise, PC is increased by 4.
+ */
+static uint16_t opcode_SKEY(cpu_t *cpu) {
+	const uint8_t reg = cpu->v_register[cpu->x];
+	const uint8_t key_state = cpu->key_state[reg];
+
+	return key_state == 1 ? SKIP_PC : NEXT_PC;
+}
+
+/* 0xExA1 - SNKEY: Skip next instruction if key with the value of Vx is not pressed.
+ * Checks the keyboard state , and if the key corresponding to the value of Vx is
+ * currently in the up position, PC is increased by 2, otherwise, PC is increased by 4.
+ */
+static uint16_t opcode_SNKEY(cpu_t *cpu) {
+	const uint8_t reg = cpu->v_register[cpu->x];
+	const uint8_t key_state = cpu->key_state[reg];
+
+	return key_state == 0 ? SKIP_PC : NEXT_PC;
+}
+
+/* 0xFx07 - LDDELAY: Set Vx = delay timer value.
+ * Interpreter copy the value of delay timer into Vx.
+ */
+static uint16_t opcode_LDDELAY(cpu_t *cpu) {
+	uint8_t *reg = &cpu->v_register[cpu->x];
+
+	*reg = cpu->delay_timer;
+	return NEXT_PC;
+}
+
+/* 0xFx0A - WAITKEY: Wait for a key press, store the value of the key in Vx.
+ * All execution stops until a key is pressed,
+ * then the value of that key is stored in Vx.
+ */
+static uint16_t opcode_WAITKEY(cpu_t *cpu) {
+	for (uint8_t key = 0; key < KEYS_COUNT; key += 1) {
+		if (cpu->key_state[key] == 1) {
+			cpu->v_register[cpu->x] = key;
+			return NEXT_PC;
+		}
+	}
+
+	return cpu->PC; /* Reexecute this instruction. */
 }

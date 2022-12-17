@@ -37,7 +37,7 @@ typedef struct {
 
 	/* Data */
 	uint16_t addr;	/* 0nnn */
-	uint8_t byte;	/* 0kk0 */
+	uint8_t byte;	/* 00kk */
 	uint8_t nibble; /* 000n */
 	uint8_t x;		/* 0X00 */
 	uint8_t y;		/* 00Y0 */
