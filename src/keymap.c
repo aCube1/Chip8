@@ -4,6 +4,7 @@
 #include "log.h"
 #include "utils.h"
 
+#include <SDL_keyboard.h>
 #include <SDL_scancode.h>
 
 /* Default scancode layout.
@@ -14,25 +15,25 @@
 */
 
 void keymap_load_default(keymap_t *map) {
-	map->chip8_keys[0] = SDL_SCANCODE_1;
-	map->chip8_keys[1] = SDL_SCANCODE_2;
-	map->chip8_keys[2] = SDL_SCANCODE_3;
-	map->chip8_keys[3] = SDL_SCANCODE_C;
+	map->chip8_keys[0x1] = SDL_SCANCODE_1;
+	map->chip8_keys[0x2] = SDL_SCANCODE_2;
+	map->chip8_keys[0x3] = SDL_SCANCODE_3;
+	map->chip8_keys[0xC] = SDL_SCANCODE_4;
 
-	map->chip8_keys[4] = SDL_SCANCODE_4;
-	map->chip8_keys[5] = SDL_SCANCODE_5;
-	map->chip8_keys[6] = SDL_SCANCODE_6;
-	map->chip8_keys[7] = SDL_SCANCODE_D;
+	map->chip8_keys[0x4] = SDL_SCANCODE_Q;
+	map->chip8_keys[0x5] = SDL_SCANCODE_W;
+	map->chip8_keys[0x6] = SDL_SCANCODE_E;
+	map->chip8_keys[0xD] = SDL_SCANCODE_R;
 
-	map->chip8_keys[8] = SDL_SCANCODE_7;
-	map->chip8_keys[9] = SDL_SCANCODE_8;
-	map->chip8_keys[10] = SDL_SCANCODE_9;
-	map->chip8_keys[11] = SDL_SCANCODE_E;
+	map->chip8_keys[0x7] = SDL_SCANCODE_A;
+	map->chip8_keys[0x8] = SDL_SCANCODE_S;
+	map->chip8_keys[0x9] = SDL_SCANCODE_D;
+	map->chip8_keys[0xE] = SDL_SCANCODE_F;
 
-	map->chip8_keys[12] = SDL_SCANCODE_A;
-	map->chip8_keys[13] = SDL_SCANCODE_0;
-	map->chip8_keys[14] = SDL_SCANCODE_B;
-	map->chip8_keys[15] = SDL_SCANCODE_F;
+	map->chip8_keys[0xA] = SDL_SCANCODE_Z;
+	map->chip8_keys[0x0] = SDL_SCANCODE_X;
+	map->chip8_keys[0xB] = SDL_SCANCODE_C;
+	map->chip8_keys[0xF] = SDL_SCANCODE_V;
 }
 
 void keymap_get_keystate(SDL_Event *event, keymap_t map, uint8_t keystate[KEYS_COUNT]) {
@@ -40,7 +41,7 @@ void keymap_get_keystate(SDL_Event *event, keymap_t map, uint8_t keystate[KEYS_C
 
 	for (uint8_t i = 0; i < KEYS_COUNT; i += 1) {
 		if (scancode == map.chip8_keys[i]) {
-			/* If key is pressed, set keystate to 1, if not pressed, set keystate to 0. */
+			/* If key is pressed, set keystate to 1, if not, set keystate to 0. */
 			keystate[i] = event->key.state == SDL_PRESSED ? 1 : 0;
 			break;
 		}

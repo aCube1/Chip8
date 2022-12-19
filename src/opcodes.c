@@ -12,77 +12,85 @@
 /* Set true if error occurried. */
 static bool has_error = false;
 
-static uint16_t opcode_CLS(cpu_t *cpu);		/* 0x00E0 */
-static uint16_t opcode_RET(cpu_t *cpu);		/* 0x00EE */
-static uint16_t opcode_JMP(cpu_t *cpu);		/* 0x1nnn */
-static uint16_t opcode_CALL(cpu_t *cpu);	/* 0x2nnn */
-static uint16_t opcode_SE(cpu_t *cpu);		/* 0x3xkk */
-static uint16_t opcode_SNE(cpu_t *cpu);		/* 0x4xkk */
-static uint16_t opcode_SEREG(cpu_t *cpu);	/* 0x5xy0 */
-static uint16_t opcode_LDIMM(cpu_t *cpu);	/* 0x6xkk */
-static uint16_t opcode_ADDIMM(cpu_t *cpu);	/* 0x7xkk */
-static uint16_t opcode_LDV(cpu_t *cpu);		/* 0x8xy0 */
-static uint16_t opcode_OR(cpu_t *cpu);		/* 0x8xy1 */
-static uint16_t opcode_AND(cpu_t *cpu);		/* 0x8xy2 */
-static uint16_t opcode_XOR(cpu_t *cpu);		/* 0x8xy3 */
-static uint16_t opcode_ADD(cpu_t *cpu);		/* 0x8xy4 */
-static uint16_t opcode_SUB(cpu_t *cpu);		/* 0x8xy5 */
-static uint16_t opcode_SHR(cpu_t *cpu);		/* 0x8xy6 */
-static uint16_t opcode_SUBN(cpu_t *cpu);	/* 0x8xy7 */
-static uint16_t opcode_SHL(cpu_t *cpu);		/* 0x8xyE */
-static uint16_t opcode_SNEREG(cpu_t *cpu);	/* 0x9xy0 */
-static uint16_t opcode_LDI(cpu_t *cpu);		/* 0xAnnn */
-static uint16_t opcode_JMPREG(cpu_t *cpu);	/* 0xBnnn */
-static uint16_t opcode_RAND(cpu_t *cpu);	/* 0xCxkk */
-static uint16_t opcode_DRAW(cpu_t *cpu);	/* 0xDxyn */
-static uint16_t opcode_SKEY(cpu_t *cpu);	/* 0xEx9E */
-static uint16_t opcode_SNKEY(cpu_t *cpu);	/* 0xExA1 */
-static uint16_t opcode_LDDELAY(cpu_t *cpu); /* 0xFx07 */
-static uint16_t opcode_WAITKEY(cpu_t *cpu); /* 0xFx0A */
+static uint16_t opcode_CLS(cpu_t *cpu);		 /* 0x00E0 */
+static uint16_t opcode_RET(cpu_t *cpu);		 /* 0x00EE */
+static uint16_t opcode_JMP(cpu_t *cpu);		 /* 0x1nnn */
+static uint16_t opcode_CALL(cpu_t *cpu);	 /* 0x2nnn */
+static uint16_t opcode_SE(cpu_t *cpu);		 /* 0x3xkk */
+static uint16_t opcode_SNE(cpu_t *cpu);		 /* 0x4xkk */
+static uint16_t opcode_SEREG(cpu_t *cpu);	 /* 0x5xy0 */
+static uint16_t opcode_LDIMM(cpu_t *cpu);	 /* 0x6xkk */
+static uint16_t opcode_ADDIMM(cpu_t *cpu);	 /* 0x7xkk */
+static uint16_t opcode_LDV(cpu_t *cpu);		 /* 0x8xy0 */
+static uint16_t opcode_OR(cpu_t *cpu);		 /* 0x8xy1 */
+static uint16_t opcode_AND(cpu_t *cpu);		 /* 0x8xy2 */
+static uint16_t opcode_XOR(cpu_t *cpu);		 /* 0x8xy3 */
+static uint16_t opcode_ADD(cpu_t *cpu);		 /* 0x8xy4 */
+static uint16_t opcode_SUB(cpu_t *cpu);		 /* 0x8xy5 */
+static uint16_t opcode_SHR(cpu_t *cpu);		 /* 0x8xy6 */
+static uint16_t opcode_SUBN(cpu_t *cpu);	 /* 0x8xy7 */
+static uint16_t opcode_SHL(cpu_t *cpu);		 /* 0x8xyE */
+static uint16_t opcode_SNEREG(cpu_t *cpu);	 /* 0x9xy0 */
+static uint16_t opcode_LDI(cpu_t *cpu);		 /* 0xAnnn */
+static uint16_t opcode_JMPREG(cpu_t *cpu);	 /* 0xBnnn */
+static uint16_t opcode_RAND(cpu_t *cpu);	 /* 0xCxkk */
+static uint16_t opcode_DRAW(cpu_t *cpu);	 /* 0xDxyn */
+static uint16_t opcode_SKEY(cpu_t *cpu);	 /* 0xEx9E */
+static uint16_t opcode_SNKEY(cpu_t *cpu);	 /* 0xExA1 */
+static uint16_t opcode_RDELAY(cpu_t *cpu);	 /* 0xFx07 */
+static uint16_t opcode_WAITKEY(cpu_t *cpu);	 /* 0xFx0A */
+static uint16_t opcode_WDELAY(cpu_t *cpu);	 /* 0xFx15 */
+static uint16_t opcode_WSOUND(cpu_t *cpu);	 /* 0xFx18 */
+static uint16_t opcode_ADDI(cpu_t *cpu);	 /* 0xFx1E */
+static uint16_t opcode_LDSPRITE(cpu_t *cpu); /* 0xFx29 */
+static uint16_t opcode_STBCD(cpu_t *cpu);	 /* 0xFx33 */
+static uint16_t opcode_STREG(cpu_t *cpu);	 /* 0xFx55 */
+static uint16_t opcode_LDREG(cpu_t *cpu);	 /* 0xFx65 */
 
 /* Generate OPCODES. */
 /* clang-format off */
 const opcode_t OPCODES[MAX_OPCODES] = {
-	{ opcode_CLS,     0x00E0, 0xF0FF },
-	{ opcode_RET,     0x00EE, 0xF0FF },
-	{ opcode_JMP,     0x1000, 0xF000 },
-	{ opcode_CALL,    0x2000, 0xF000 },
-	{ opcode_SE,      0x3000, 0xF000 },
-	{ opcode_SNE,     0x4000, 0xF000 },
-	{ opcode_SEREG,   0x5000, 0xF00F },
-	{ opcode_LDIMM,   0x6000, 0xF000 },
-	{ opcode_ADDIMM,  0x7000, 0xF000 },
-	{ opcode_LDV,     0x8000, 0xF00F },
-	{ opcode_OR,      0x8001, 0xF00F },
-	{ opcode_AND,     0x8002, 0xF00F },
-	{ opcode_XOR,     0x8003, 0xF00F },
-	{ opcode_ADD,     0x8004, 0xF00F },
-	{ opcode_SUB,     0x8005, 0xF00F },
-	{ opcode_SHR,     0x8006, 0xF00F },
-	{ opcode_SUBN,    0x8007, 0xF00F },
-	{ opcode_SHL,     0x800E, 0xF00F },
-	{ opcode_SNEREG,  0x9000, 0xF000 },
-	{ opcode_LDI,     0xA000, 0xF000 },
-	{ opcode_JMPREG,  0xB000, 0xF000 },
-	{ opcode_RAND,    0xC000, 0xF000 },
-	{ opcode_DRAW,    0xD000, 0xF000 },
-	{ opcode_SKEY,    0xE09E, 0xF0FF },
-	{ opcode_SNKEY,   0xE0A1, 0xF0FF },
-	{ opcode_LDDELAY, 0xF007, 0xF0FF },
-	{ opcode_WAITKEY, 0xF00A, 0xF0FF },
-	{ NULL,           0xF015, 0xF0FF },
-	{ NULL,           0xF018, 0xF0FF },
-	{ NULL,           0xF01E, 0xF0FF },
-	{ NULL,           0xF029, 0xF0FF },
-	{ NULL,           0xF033, 0xF0FF },
-	{ NULL,           0xF055, 0xF0FF },
-	{ NULL,           0xF065, 0xF0FF },
+	{ opcode_CLS,      0x00E0, 0xF0FF },
+	{ opcode_RET,      0x00EE, 0xF0FF },
+	{ opcode_JMP,      0x1000, 0xF000 },
+	{ opcode_CALL,     0x2000, 0xF000 },
+	{ opcode_SE,       0x3000, 0xF000 },
+	{ opcode_SNE,      0x4000, 0xF000 },
+	{ opcode_SEREG,    0x5000, 0xF00F },
+	{ opcode_LDIMM,    0x6000, 0xF000 },
+	{ opcode_ADDIMM,   0x7000, 0xF000 },
+	{ opcode_LDV,      0x8000, 0xF00F },
+	{ opcode_OR,       0x8001, 0xF00F },
+	{ opcode_AND,      0x8002, 0xF00F },
+	{ opcode_XOR,      0x8003, 0xF00F },
+	{ opcode_ADD,      0x8004, 0xF00F },
+	{ opcode_SUB,      0x8005, 0xF00F },
+	{ opcode_SHR,      0x8006, 0xF00F },
+	{ opcode_SUBN,     0x8007, 0xF00F },
+	{ opcode_SHL,      0x800E, 0xF00F },
+	{ opcode_SNEREG,   0x9000, 0xF000 },
+	{ opcode_LDI,      0xA000, 0xF000 },
+	{ opcode_JMPREG,   0xB000, 0xF000 },
+	{ opcode_RAND,     0xC000, 0xF000 },
+	{ opcode_DRAW,     0xD000, 0xF000 },
+	{ opcode_SKEY,     0xE09E, 0xF0FF },
+	{ opcode_SNKEY,    0xE0A1, 0xF0FF },
+	{ opcode_RDELAY,   0xF007, 0xF0FF },
+	{ opcode_WAITKEY,  0xF00A, 0xF0FF },
+	{ opcode_WDELAY,   0xF015, 0xF0FF },
+	{ opcode_WSOUND,   0xF018, 0xF0FF },
+	{ opcode_ADDI,     0xF01E, 0xF0FF },
+	{ opcode_LDSPRITE, 0xF029, 0xF0FF },
+	{ opcode_STBCD,    0xF033, 0xF0FF },
+	{ opcode_STREG,    0xF055, 0xF0FF },
+	{ opcode_LDREG,    0xF065, 0xF0FF },
 };
 /* clang-format on */
 
 /* Decode current opcode using the mask and execute handler if match. */
 int8_t opcode_decode(cpu_t *cpu) {
 	has_error = false; /* Reset error. */
+
 	for (size_t i = 0; i < MAX_OPCODES; i += 1) {
 		opcode_t opcode = OPCODES[i];
 
@@ -91,7 +99,14 @@ int8_t opcode_decode(cpu_t *cpu) {
 			if (opcode.handler != NULL) {
 				cpu->PC = opcode.handler(cpu);
 			}
-			return has_error ? STATUS_ERROR : STATUS_OK;
+
+			/* Verify if the opcode handler setted the error flag to true. */
+			if (has_error) {
+				log_error("An error occurried while execute opcode: %X", cpu->opcode);
+				return STATUS_ERROR;
+			}
+
+			return STATUS_OK;
 		}
 	}
 
@@ -136,7 +151,7 @@ static uint16_t opcode_JMP(cpu_t *cpu) {
  * WARN: If stack pointer is <= 0, the instruction is skipped.
  */
 static uint16_t opcode_CALL(cpu_t *cpu) {
-	if (cpu->PC >= STACK_SIZE) {
+	if (cpu->SP >= STACK_SIZE) {
 		/* Skip instruction and set has_error to true. */
 		has_error = true;
 		return NEXT_PC;
@@ -285,11 +300,12 @@ static uint16_t opcode_SUB(cpu_t *cpu) {
 /* 0x8xy6 - SHR: Set Vx = Vx SHR 1.
  * Interpreter set VF to the least-significant bit of Vx. Then Vx is divided by 2.
  * Vy is ignored.
+ * WARN: Ambiguous opcode.
  */
 static uint16_t opcode_SHR(cpu_t *cpu) {
 	uint8_t *reg = &cpu->v_register[cpu->x];
 
-	cpu->v_register[0xF] = *reg & 1;
+	cpu->v_register[0xF] = *reg & 0x1;
 	*reg >>= 1;
 	return NEXT_PC;
 }
@@ -310,6 +326,7 @@ static uint16_t opcode_SUBN(cpu_t *cpu) {
 /* 0x8xyE - SHL: Set Vx = Vx SHL 1.
  * Interpreter set VF to the most-significant bit of Vx. Then Vx is multiplied by 2.
  * Vy is ignored.
+ * WARN: Ambiguous opcode.
  */
 static uint16_t opcode_SHL(cpu_t *cpu) {
 	uint8_t *reg = &cpu->v_register[cpu->x];
@@ -341,11 +358,11 @@ static uint16_t opcode_LDI(cpu_t *cpu) {
 
 /* 0xBnnn - JMPREG: Jump to location nnn + V0.
  * Interpreter set PC to nnn plus the value of V0.
+ * WARN: Ambiguous opcode.
+ * TODO: This opcode also can be read as 0xBxnn, make this configurable.
  */
 static uint16_t opcode_JMPREG(cpu_t *cpu) {
-	const uint8_t addr = cpu->addr;
-
-	return addr + cpu->v_register[0];
+	return cpu->addr + cpu->v_register[0];
 }
 
 /* 0xCxkk - RAND: Set Vx = random_byte AND kk;
@@ -424,10 +441,10 @@ static uint16_t opcode_SNKEY(cpu_t *cpu) {
 	return key_state == 0 ? SKIP_PC : NEXT_PC;
 }
 
-/* 0xFx07 - LDDELAY: Set Vx = delay timer value.
+/* 0xFx07 - RDELAY: Set Vx = delay timer value.
  * Interpreter copy the value of delay timer into Vx.
  */
-static uint16_t opcode_LDDELAY(cpu_t *cpu) {
+static uint16_t opcode_RDELAY(cpu_t *cpu) {
 	uint8_t *reg = &cpu->v_register[cpu->x];
 
 	*reg = cpu->delay_timer;
@@ -447,4 +464,92 @@ static uint16_t opcode_WAITKEY(cpu_t *cpu) {
 	}
 
 	return cpu->PC; /* Reexecute this instruction. */
+}
+
+/* 0xFx15 - STDELAY: Set delay timer = Vx.
+ * Interpreter copy the value of Vx into delay timer.
+ */
+static uint16_t opcode_WDELAY(cpu_t *cpu) {
+	const uint8_t reg_val = cpu->v_register[cpu->x];
+	uint8_t *delay_timer = &cpu->delay_timer;
+
+	*delay_timer = reg_val;
+	return NEXT_PC;
+}
+
+/* 0xFx18 - STSOUND: Set sound timer = Vx.
+ * Interpreter copy the value of Vx into sound timer.
+ */
+static uint16_t opcode_WSOUND(cpu_t *cpu) {
+	const uint8_t reg = cpu->v_register[cpu->x];
+	uint8_t *sound_timer = &cpu->sound_timer;
+
+	*sound_timer = reg;
+	return NEXT_PC;
+}
+
+/* 0xFx1E - ADDI: Set I = I + Vx.
+ * The values of I and Vx are added, and the result is stored in I.
+ */
+static uint16_t opcode_ADDI(cpu_t *cpu) {
+	const uint8_t reg = cpu->v_register[cpu->x];
+
+	cpu->I += reg;
+	return NEXT_PC;
+}
+
+/* 0xFx29 - LDSPRITE: Set I = location of sprite for digit Vx.
+ * The value of I is set to the location for the hexadecimal sprite corresponding
+ * to the value of Vx.
+ */
+static uint16_t opcode_LDSPRITE(cpu_t *cpu) {
+	const uint8_t reg = cpu->v_register[cpu->x];
+
+	cpu->I = FONT_ADDRESS + (FONT_CHAR_SIZE * reg);
+	return NEXT_PC;
+}
+
+/* 0xFx33 - STBCD: Store BCD representation of Vx in memory locations I, I+1, and I+2.
+ * The interpreter takes the decimal value of Vx, and places the hundreds digit in
+ * memory at location in I, the tens digit at location I+1,
+ * and the ones digit at location I+2.
+ */
+static uint16_t opcode_STBCD(cpu_t *cpu) {
+	const uint8_t value = cpu->v_register[cpu->x];
+	const uint8_t ones = value % 10;
+	const uint8_t tens = (value / 10) % 10;
+	const uint8_t hundreds = (value / 100) % 10;
+
+	cpu->memory[cpu->I + 0] = hundreds;
+	cpu->memory[cpu->I + 1] = tens;
+	cpu->memory[cpu->I + 2] = ones;
+	return NEXT_PC;
+}
+
+/* 0xFx55 - STREG: Store registers V0 through Vx in memory starting at location I.
+ * The interpreter copies the values of registers V0 through Vx into memory,
+ * starting at the address in I.
+ */
+static uint16_t opcode_STREG(cpu_t *cpu) {
+	const uint8_t reg = cpu->x;
+
+	for (size_t i = 0; i <= reg; i += 1) {
+		cpu->memory[cpu->I + i] = cpu->v_register[i];
+	}
+
+	return NEXT_PC;
+}
+
+/* 0xFx65 - LDREG: Read registers V0 through Vx from memory starting at location I.
+ * The interpreter reads values from memory starting at location I into
+ * registers V0 through Vx.
+ */
+static uint16_t opcode_LDREG(cpu_t *cpu) {
+	const uint8_t reg = cpu->x;
+
+	for (size_t i = 0; i <= reg; i += 1) {
+		cpu->v_register[i] = cpu->memory[cpu->I + i];
+	}
+
+	return NEXT_PC;
 }

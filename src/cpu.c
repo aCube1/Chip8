@@ -7,16 +7,18 @@
 
 #include <SDL_pixels.h>
 #include <SDL_render.h>
-#include <SDL_surface.h>
 #include <stdlib.h>
 #include <string.h>
+
+/* Char array size: 80 bytes. */
+#define FONT_COUNT FONT_CHAR_COUNT *FONT_CHAR_SIZE
 
 static void update_timers(cpu_t *cpu);
 
 static const SDL_PixelFormatEnum texture_pixel_format = SDL_PIXELFORMAT_ABGR32;
 static const SDL_TextureAccess texture_access = SDL_TEXTUREACCESS_STREAMING;
 
-static const uint8_t CPU_font[80] = {
+static const uint8_t cpu_font[FONT_COUNT] = {
 	0xF0, 0x90, 0x90, 0x90, 0xF0, /* 0 */
 	0x20, 0x60, 0x20, 0x20, 0x70, /* 1 */
 	0xF0, 0x10, 0xF0, 0x80, 0xF0, /* 2 */
@@ -92,7 +94,7 @@ void cpu_reset(cpu_t *cpu) {
 	memset(cpu->key_state, 0, KEYS_COUNT * sizeof(uint8_t));
 
 	/* Load the built-in fontset in 0x50-0x0A0 */
-	memcpy(cpu->memory + 0x50, CPU_font, 80 * sizeof(uint8_t));
+	memcpy(cpu->memory + FONT_ADDRESS, cpu_font, FONT_COUNT * sizeof(uint8_t));
 }
 
 void cpu_quit(cpu_t *cpu) {

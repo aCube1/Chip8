@@ -13,6 +13,10 @@
 #define REGISTERS_COUNT 16
 #define KEYS_COUNT		16
 
+#define FONT_ADDRESS	0x50 /* Address to load font. */
+#define FONT_CHAR_COUNT 16
+#define FONT_CHAR_SIZE	5
+
 typedef struct {
 	uint16_t opcode; /* Current Opcode. */
 	uint8_t memory[MEMORY_SIZE];
