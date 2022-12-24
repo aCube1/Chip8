@@ -19,12 +19,11 @@ static struct {
 	keymap_t map;
 
 	uint16_t current_fps;
-	double delta_time;
 } Core;
 
-static uint64_t last_ticks = 0;
+static uint64_t last_time = 0;
 static uint64_t fps_count = 0;
-static double fps_timer = 0.0;
+static double fps_timer = 0.0f;
 
 int8_t core_init(configs_t configs) {
 	uint32_t init_flags = SDL_INIT_EVERYTHING;
@@ -38,7 +37,7 @@ int8_t core_init(configs_t configs) {
 		return STATUS_ERROR;
 	}
 
-	if (cpu_init(&Core.cpu, Core.display.renderer) != STATUS_OK) {
+	if (cpu_init(&Core.cpu, configs.clock_speed, Core.display.renderer) != STATUS_OK) {
 		log_fatal("Unable to init Chip-8 CPU!");
 		core_exit();
 		return STATUS_ERROR;
@@ -61,6 +60,7 @@ int8_t core_run(void) {
 	int8_t status = STATUS_OK;
 	SDL_Event event;
 
+	last_time = SDL_GetTicks64();
 	while (Core.is_running && status == STATUS_OK) {
 		while (SDL_PollEvent(&event)) {
 			switch (event.type) {
@@ -75,8 +75,8 @@ int8_t core_run(void) {
 			}
 		}
 
-		if (cpu_emulate_cycle(&Core.cpu) != STATUS_OK) {
-			log_error("Unable to emulate CPU cycle.");
+		if (cpu_update(&Core.cpu) != STATUS_OK) {
+			log_debug("An error has been found while running CPU!");
 			status = STATUS_ERROR;
 		}
 
@@ -88,6 +88,7 @@ int8_t core_run(void) {
 		display_update(&Core.display);
 
 		update_fps();
+		last_time = SDL_GetTicks64();
 	}
 
 	core_exit();
@@ -95,17 +96,15 @@ int8_t core_run(void) {
 }
 
 static void update_fps(void) {
-	Core.delta_time = (SDL_GetTicks64() - last_ticks) / 1000.0;
-	fps_timer += Core.delta_time;
+	fps_timer += (SDL_GetTicks64() - last_time) / 1000.0f;
 
-	if (fps_timer >= 1.0) {
+	if (fps_timer >= 1.0f) {
 		Core.current_fps = fps_count;
 		fps_count = 0;
 		fps_timer = 0;
 	}
 
 	fps_count += 1;
-	last_ticks = SDL_GetTicks64();
 }
 
 static void core_exit(void) {

@@ -12,7 +12,7 @@
 #define TITLE				"Chip8 Emulator"
 #define DEFAULT_WIDTH		800
 #define DEFAULT_HEIGHT		600
-#define DEFAULT_CLOCK_SPEED 100 /* Speed in MHz */
+#define DEFAULT_CLOCK_SPEED 400 /* Speed in Hz */
 
 /* Graphics settings. */
 /* Background */

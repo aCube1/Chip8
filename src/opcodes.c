@@ -117,7 +117,7 @@ int8_t opcode_decode(cpu_t *cpu) {
 /* 0x00E0 - CLS: Clear display. */
 static uint16_t opcode_CLS(cpu_t *cpu) {
 	memset(cpu->gfx, 0, GFX_WIDTH * GFX_HEIGHT * sizeof(uint8_t));
-	cpu->gfx_changed = true;
+	cpu->has_gfx_changed = true;
 	return NEXT_PC;
 }
 
@@ -168,7 +168,7 @@ static uint16_t opcode_CALL(cpu_t *cpu) {
  */
 static uint16_t opcode_SE(cpu_t *cpu) {
 	const uint8_t val = cpu->byte;
-	const uint8_t reg = cpu->v_register[cpu->x];
+	const uint8_t reg = cpu->V[cpu->x];
 
 	return reg == val ? SKIP_PC : NEXT_PC;
 }
@@ -179,7 +179,7 @@ static uint16_t opcode_SE(cpu_t *cpu) {
  */
 static uint16_t opcode_SNE(cpu_t *cpu) {
 	const uint8_t val = cpu->byte;
-	const uint8_t reg = cpu->v_register[cpu->x];
+	const uint8_t reg = cpu->V[cpu->x];
 
 	return reg != val ? SKIP_PC : NEXT_PC;
 }
@@ -189,8 +189,8 @@ static uint16_t opcode_SNE(cpu_t *cpu) {
  * increments the program counter by 2.
  */
 static uint16_t opcode_SEREG(cpu_t *cpu) {
-	const uint8_t reg_x = cpu->v_register[cpu->x];
-	const uint8_t reg_y = cpu->v_register[cpu->y];
+	const uint8_t reg_x = cpu->V[cpu->x];
+	const uint8_t reg_y = cpu->V[cpu->y];
 
 	return reg_x == reg_y ? SKIP_PC : NEXT_PC;
 }
@@ -200,7 +200,7 @@ static uint16_t opcode_SEREG(cpu_t *cpu) {
  */
 static uint16_t opcode_LDIMM(cpu_t *cpu) {
 	const uint8_t val = cpu->byte;
-	uint8_t *reg = &cpu->v_register[cpu->x];
+	uint8_t *reg = &cpu->V[cpu->x];
 
 	*reg = val;
 	return NEXT_PC;
@@ -212,7 +212,7 @@ static uint16_t opcode_LDIMM(cpu_t *cpu) {
  */
 static uint16_t opcode_ADDIMM(cpu_t *cpu) {
 	const uint8_t val = cpu->byte;
-	uint8_t *reg = &cpu->v_register[cpu->x];
+	uint8_t *reg = &cpu->V[cpu->x];
 
 	*reg += val;
 	return NEXT_PC;
@@ -222,8 +222,8 @@ static uint16_t opcode_ADDIMM(cpu_t *cpu) {
  * The interpreter stores the value of register Vy in register Vx.
  */
 static uint16_t opcode_LDV(cpu_t *cpu) {
-	const uint8_t reg_y = cpu->v_register[cpu->y];
-	uint8_t *reg_x = &cpu->v_register[cpu->x];
+	const uint8_t reg_y = cpu->V[cpu->y];
+	uint8_t *reg_x = &cpu->V[cpu->x];
 
 	*reg_x = reg_y;
 	return NEXT_PC;
@@ -235,8 +235,8 @@ static uint16_t opcode_LDV(cpu_t *cpu) {
  * either bit is 1, then the same bit in the result is also 1. Otherwise, it is 0.
  */
 static uint16_t opcode_OR(cpu_t *cpu) {
-	const uint8_t reg_y = cpu->v_register[cpu->y];
-	uint8_t *reg_x = &cpu->v_register[cpu->x];
+	const uint8_t reg_y = cpu->V[cpu->y];
+	uint8_t *reg_x = &cpu->V[cpu->x];
 
 	*reg_x |= reg_y;
 	return NEXT_PC;
@@ -248,8 +248,8 @@ static uint16_t opcode_OR(cpu_t *cpu) {
  * both bits are 1, then the same bit in the result is also 1. Otherwise, it is 0.
  */
 static uint16_t opcode_AND(cpu_t *cpu) {
-	const uint8_t reg_y = cpu->v_register[cpu->y];
-	uint8_t *reg_x = &cpu->v_register[cpu->x];
+	const uint8_t reg_y = cpu->V[cpu->y];
+	uint8_t *reg_x = &cpu->V[cpu->x];
 
 	*reg_x &= reg_y;
 	return NEXT_PC;
@@ -262,8 +262,8 @@ static uint16_t opcode_AND(cpu_t *cpu) {
  * to 1. Otherwise, it is 0.
  */
 static uint16_t opcode_XOR(cpu_t *cpu) {
-	const uint8_t reg_y = cpu->v_register[cpu->y];
-	uint8_t *reg_x = &cpu->v_register[cpu->x];
+	const uint8_t reg_y = cpu->V[cpu->y];
+	uint8_t *reg_x = &cpu->V[cpu->x];
 
 	*reg_x ^= reg_y;
 	return NEXT_PC;
@@ -275,11 +275,11 @@ static uint16_t opcode_XOR(cpu_t *cpu) {
  * Only the lowest 8 bits of the result are kept, and stored in Vx.
  */
 static uint16_t opcode_ADD(cpu_t *cpu) {
-	const uint8_t reg_y = cpu->v_register[cpu->y];
-	uint8_t *reg_x = &cpu->v_register[cpu->x];
+	const uint8_t reg_y = cpu->V[cpu->y];
+	uint8_t *reg_x = &cpu->V[cpu->x];
 	uint16_t val = *reg_x + reg_y;
 
-	cpu->v_register[0xF] = val > UINT8_MAX; /* Set carry flag. */
+	cpu->V[0xF] = val > UINT8_MAX; /* Set carry flag. */
 	*reg_x += reg_y;
 	return NEXT_PC;
 }
@@ -289,10 +289,10 @@ static uint16_t opcode_ADD(cpu_t *cpu) {
  * Then Vy is subtracted from Vx, and the results stored in Vx.
  */
 static uint16_t opcode_SUB(cpu_t *cpu) {
-	const uint8_t reg_y = cpu->v_register[cpu->y];
-	uint8_t *reg_x = &cpu->v_register[cpu->x];
+	const uint8_t reg_y = cpu->V[cpu->y];
+	uint8_t *reg_x = &cpu->V[cpu->x];
 
-	cpu->v_register[0xF] = *reg_x > reg_y; /* Set not borrow. */
+	cpu->V[0xF] = *reg_x > reg_y; /* Set not borrow. */
 	*reg_x -= reg_y;
 	return NEXT_PC;
 }
@@ -303,9 +303,9 @@ static uint16_t opcode_SUB(cpu_t *cpu) {
  * WARN: Ambiguous opcode.
  */
 static uint16_t opcode_SHR(cpu_t *cpu) {
-	uint8_t *reg = &cpu->v_register[cpu->x];
+	uint8_t *reg = &cpu->V[cpu->x];
 
-	cpu->v_register[0xF] = *reg & 0x1;
+	cpu->V[0xF] = *reg & 0x1;
 	*reg >>= 1;
 	return NEXT_PC;
 }
@@ -315,10 +315,10 @@ static uint16_t opcode_SHR(cpu_t *cpu) {
  * Then Vx is subtracted from Vy, and the results stored in Vx.
  */
 static uint16_t opcode_SUBN(cpu_t *cpu) {
-	const uint8_t reg_y = cpu->v_register[cpu->y];
-	uint8_t *reg_x = &cpu->v_register[cpu->x];
+	const uint8_t reg_y = cpu->V[cpu->y];
+	uint8_t *reg_x = &cpu->V[cpu->x];
 
-	cpu->v_register[0xF] = *reg_x < reg_y; /* Set not borrow. */
+	cpu->V[0xF] = *reg_x < reg_y; /* Set not borrow. */
 	*reg_x = reg_y - (*reg_x);
 	return NEXT_PC;
 }
@@ -329,9 +329,9 @@ static uint16_t opcode_SUBN(cpu_t *cpu) {
  * WARN: Ambiguous opcode.
  */
 static uint16_t opcode_SHL(cpu_t *cpu) {
-	uint8_t *reg = &cpu->v_register[cpu->x];
+	uint8_t *reg = &cpu->V[cpu->x];
 
-	cpu->v_register[0xF] = (*reg >> 7) & 1;
+	cpu->V[0xF] = (*reg >> 7) & 1;
 	*reg <<= 1;
 	return NEXT_PC;
 }
@@ -342,8 +342,8 @@ static uint16_t opcode_SHL(cpu_t *cpu) {
  * otherwise, the program counter is increased by 4.
  */
 static uint16_t opcode_SNEREG(cpu_t *cpu) {
-	const uint8_t reg_x = cpu->v_register[cpu->x];
-	const uint8_t reg_y = cpu->v_register[cpu->y];
+	const uint8_t reg_x = cpu->V[cpu->x];
+	const uint8_t reg_y = cpu->V[cpu->y];
 
 	return reg_x != reg_y ? SKIP_PC : NEXT_PC;
 }
@@ -362,7 +362,7 @@ static uint16_t opcode_LDI(cpu_t *cpu) {
  * TODO: This opcode also can be read as 0xBxnn, make this configurable.
  */
 static uint16_t opcode_JMPREG(cpu_t *cpu) {
-	return cpu->addr + cpu->v_register[0];
+	return cpu->addr + cpu->V[0];
 }
 
 /* 0xCxkk - RAND: Set Vx = random_byte AND kk;
@@ -371,7 +371,7 @@ static uint16_t opcode_JMPREG(cpu_t *cpu) {
  */
 static uint16_t opcode_RAND(cpu_t *cpu) {
 	const uint8_t byte = cpu->byte;
-	uint8_t *reg = &cpu->v_register[cpu->x];
+	uint8_t *reg = &cpu->V[cpu->x];
 
 	*reg = (rand() % 256) & byte;
 	return NEXT_PC;
@@ -387,15 +387,15 @@ static uint16_t opcode_RAND(cpu_t *cpu) {
  * it wraps around to the opposite side of the screen.
  */
 static uint16_t opcode_DRAW(cpu_t *cpu) {
-	const uint8_t x = cpu->v_register[cpu->x];
-	const uint8_t y = cpu->v_register[cpu->y];
+	const uint8_t x = cpu->V[cpu->x];
+	const uint8_t y = cpu->V[cpu->y];
 	const uint8_t n = cpu->nibble;
 
 	/* Copy sprite from the memory. */
 	uint8_t sprite[n];
 	memcpy(sprite, &cpu->memory[cpu->I], n);
 
-	cpu->v_register[0xF] = 0; /* Set pixel erased flag to 0. */
+	cpu->V[0xF] = 0; /* Set pixel erased flag to 0. */
 	for (uint8_t byte_index = 0; byte_index < n; byte_index += 1) {
 		for (uint8_t bit_index = 0; bit_index < 8; bit_index += 1) {
 			/* Calculate pixel position. Wrap if going beyond screen boundaries. */
@@ -408,14 +408,14 @@ static uint16_t opcode_DRAW(cpu_t *cpu) {
 
 			/* If pixel is ereased, set flag to 1. */
 			if (bit == 0x1 && *pixel == 0x1) {
-				cpu->v_register[0xF] = 1;
+				cpu->V[0xF] = 1;
 			}
 
 			*pixel ^= bit; /* Effectively XOR with the sprite pixel */
 		}
 	}
 
-	cpu->gfx_changed = true;
+	cpu->has_gfx_changed = true;
 	return NEXT_PC;
 }
 
@@ -424,7 +424,7 @@ static uint16_t opcode_DRAW(cpu_t *cpu) {
  * currently in the down position, PC is increased by 2, otherwise, PC is increased by 4.
  */
 static uint16_t opcode_SKEY(cpu_t *cpu) {
-	const uint8_t reg = cpu->v_register[cpu->x];
+	const uint8_t reg = cpu->V[cpu->x];
 	const uint8_t key_state = cpu->key_state[reg];
 
 	return key_state == 1 ? SKIP_PC : NEXT_PC;
@@ -435,7 +435,7 @@ static uint16_t opcode_SKEY(cpu_t *cpu) {
  * currently in the up position, PC is increased by 2, otherwise, PC is increased by 4.
  */
 static uint16_t opcode_SNKEY(cpu_t *cpu) {
-	const uint8_t reg = cpu->v_register[cpu->x];
+	const uint8_t reg = cpu->V[cpu->x];
 	const uint8_t key_state = cpu->key_state[reg];
 
 	return key_state == 0 ? SKIP_PC : NEXT_PC;
@@ -445,7 +445,7 @@ static uint16_t opcode_SNKEY(cpu_t *cpu) {
  * Interpreter copy the value of delay timer into Vx.
  */
 static uint16_t opcode_RDELAY(cpu_t *cpu) {
-	uint8_t *reg = &cpu->v_register[cpu->x];
+	uint8_t *reg = &cpu->V[cpu->x];
 
 	*reg = cpu->delay_timer;
 	return NEXT_PC;
@@ -458,7 +458,7 @@ static uint16_t opcode_RDELAY(cpu_t *cpu) {
 static uint16_t opcode_WAITKEY(cpu_t *cpu) {
 	for (uint8_t key = 0; key < KEYS_COUNT; key += 1) {
 		if (cpu->key_state[key] == 1) {
-			cpu->v_register[cpu->x] = key;
+			cpu->V[cpu->x] = key;
 			return NEXT_PC;
 		}
 	}
@@ -470,7 +470,7 @@ static uint16_t opcode_WAITKEY(cpu_t *cpu) {
  * Interpreter copy the value of Vx into delay timer.
  */
 static uint16_t opcode_WDELAY(cpu_t *cpu) {
-	const uint8_t reg_val = cpu->v_register[cpu->x];
+	const uint8_t reg_val = cpu->V[cpu->x];
 	uint8_t *delay_timer = &cpu->delay_timer;
 
 	*delay_timer = reg_val;
@@ -481,7 +481,7 @@ static uint16_t opcode_WDELAY(cpu_t *cpu) {
  * Interpreter copy the value of Vx into sound timer.
  */
 static uint16_t opcode_WSOUND(cpu_t *cpu) {
-	const uint8_t reg = cpu->v_register[cpu->x];
+	const uint8_t reg = cpu->V[cpu->x];
 	uint8_t *sound_timer = &cpu->sound_timer;
 
 	*sound_timer = reg;
@@ -492,7 +492,7 @@ static uint16_t opcode_WSOUND(cpu_t *cpu) {
  * The values of I and Vx are added, and the result is stored in I.
  */
 static uint16_t opcode_ADDI(cpu_t *cpu) {
-	const uint8_t reg = cpu->v_register[cpu->x];
+	const uint8_t reg = cpu->V[cpu->x];
 
 	cpu->I += reg;
 	return NEXT_PC;
@@ -503,7 +503,7 @@ static uint16_t opcode_ADDI(cpu_t *cpu) {
  * to the value of Vx.
  */
 static uint16_t opcode_LDSPRITE(cpu_t *cpu) {
-	const uint8_t reg = cpu->v_register[cpu->x];
+	const uint8_t reg = cpu->V[cpu->x];
 
 	cpu->I = FONT_ADDRESS + (FONT_CHAR_SIZE * reg);
 	return NEXT_PC;
@@ -515,7 +515,7 @@ static uint16_t opcode_LDSPRITE(cpu_t *cpu) {
  * and the ones digit at location I+2.
  */
 static uint16_t opcode_STBCD(cpu_t *cpu) {
-	const uint8_t value = cpu->v_register[cpu->x];
+	const uint8_t value = cpu->V[cpu->x];
 	const uint8_t ones = value % 10;
 	const uint8_t tens = (value / 10) % 10;
 	const uint8_t hundreds = (value / 100) % 10;
@@ -534,7 +534,7 @@ static uint16_t opcode_STREG(cpu_t *cpu) {
 	const uint8_t reg = cpu->x;
 
 	for (size_t i = 0; i <= reg; i += 1) {
-		cpu->memory[cpu->I + i] = cpu->v_register[i];
+		cpu->memory[cpu->I + i] = cpu->V[i];
 	}
 
 	return NEXT_PC;
@@ -548,7 +548,7 @@ static uint16_t opcode_LDREG(cpu_t *cpu) {
 	const uint8_t reg = cpu->x;
 
 	for (size_t i = 0; i <= reg; i += 1) {
-		cpu->v_register[i] = cpu->memory[cpu->I + i];
+		cpu->V[i] = cpu->memory[cpu->I + i];
 	}
 
 	return NEXT_PC;

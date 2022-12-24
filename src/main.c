@@ -9,6 +9,7 @@
 int main(int argc, const char *argv[]) {
 	configs_t configs = {
 		.rom_filepath = "",
+		.clock_speed = DEFAULT_CLOCK_SPEED,
 		.width = DEFAULT_WIDTH,
 		.height = DEFAULT_HEIGHT,
 	};

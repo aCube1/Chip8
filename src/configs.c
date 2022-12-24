@@ -29,8 +29,11 @@ void cfg_parse_options(configs_t *config, int argc, const char *argv[]) {
 	struct argparse_option options[] = {
 		OPT_HELP(),
 		OPT_GROUP("Basic arguments."),
-		OPT_BOOLEAN(0, "quiet", &log_mode, "Disable terminal output", NULL, LOG_QUIET, 0),
-		OPT_BOOLEAN(0, "verbose", &log_mode, "Enable terminal output", NULL, LOG_ALL, 0),
+		OPT_INTEGER(
+			'c', "clock", &config->clock_speed, "Set emulator clock speed", NULL, 0, 0
+		),
+		OPT_BIT(0, "quiet", &log_mode, "Disable terminal output", NULL, LOG_QUIET, 0),
+		OPT_BIT(0, "verbose", &log_mode, "Enable terminal output", NULL, LOG_ALL, 0),
 		OPT_GROUP("Window arguments."),
 		OPT_INTEGER('w', "width", &config->width, "Set window width.", NULL, 0, 0),
 		OPT_INTEGER('h', "height", &config->height, "Set window height", NULL, 0, 0),
