@@ -1,0 +1,4 @@
+[submodule "libs/cargs"]
+	path = libs/cargs
+	url = git@github.com:likle/cargs.git
+	branch = stable

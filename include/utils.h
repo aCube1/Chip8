@@ -5,14 +5,9 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#define STATUS_STOP	 -2 /* Stop program execution. */
 #define STATUS_ERROR -1
 #define STATUS_OK	 0
-
-/* Window settings. */
-#define TITLE				"Chip8 Emulator"
-#define DEFAULT_WIDTH		800
-#define DEFAULT_HEIGHT		600
-#define DEFAULT_CLOCK_SPEED 400 /* Speed in Hz */
 
 /* Graphics settings. */
 /* Background */

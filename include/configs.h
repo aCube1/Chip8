@@ -12,6 +12,6 @@ typedef struct {
 	int16_t height; /* Window Height */
 } configs_t;
 
-void cfg_parse_options(configs_t *config, int argc, const char *argv[]);
+int8_t cfg_parse_options(configs_t *config, int argc, char *argv[]);
 
 #endif /* _CONFIGS_H_ */

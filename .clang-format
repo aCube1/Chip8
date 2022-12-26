@@ -37,4 +37,4 @@ ReferenceAlignment: Right
 PointerAlignment: Right
 
 PenaltyBreakAssignment: 32
-PenaltyReturnTypeOnItsOwnLine: 64
+PenaltyReturnTypeOnItsOwnLine: 1000

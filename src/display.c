@@ -8,13 +8,16 @@
 #include <SDL_render.h>
 #include <SDL_video.h>
 
+#define WINDOW_TITLE "Chip8 Emulator"
+
 static SDL_WindowFlags window_flags = SDL_WINDOW_OPENGL;
 static SDL_RendererFlags renderer_flags = SDL_RENDERER_ACCELERATED |
 										  SDL_RENDERER_PRESENTVSYNC;
 
 int8_t create_display(display_t *display, int16_t width, int16_t height) {
 	display->window = SDL_CreateWindow(
-		TITLE, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, window_flags
+		WINDOW_TITLE, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height,
+		window_flags
 	);
 	if (display->window == NULL) {
 		log_fatal("Unable to create window: %s", SDL_GetError());
