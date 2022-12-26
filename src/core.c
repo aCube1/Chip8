@@ -2,7 +2,7 @@
 
 #include "cpu.h"
 #include "display.h"
-#include "keymap.h"
+#include "input.h"
 #include "log.h"
 #include "utils.h"
 
@@ -16,7 +16,7 @@ static struct {
 
 	display_t display;
 	cpu_t cpu;
-	keymap_t map;
+	input_t input;
 
 	uint16_t current_fps;
 } Core;
@@ -49,8 +49,7 @@ int8_t core_init(configs_t configs) {
 		return STATUS_ERROR;
 	}
 
-	/* Set default key mapping. */
-	keymap_load_default(&Core.map);
+	input_init(&Core.input);
 
 	Core.is_running = true;
 	return STATUS_OK;
@@ -70,7 +69,7 @@ int8_t core_run(void) {
 			case SDL_KEYUP: /* FALLTHROUGH. */
 			case SDL_KEYDOWN:
 				/* Update cpu key state. */
-				keymap_get_keystate(&event, Core.map, Core.cpu.key_state);
+				input_update_keystate(&event, Core.input, Core.cpu.key_state);
 				break;
 			}
 		}

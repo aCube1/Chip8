@@ -22,7 +22,7 @@ static void do_timers_cycles(cpu_t *cpu, uint32_t amount);
 static const SDL_PixelFormatEnum texture_pixel_format = SDL_PIXELFORMAT_ABGR32;
 static const SDL_TextureAccess texture_access = SDL_TEXTUREACCESS_STREAMING;
 
-static const uint8_t cpu_font[FONT_CHAR_COUNT * FONT_CHAR_SIZE] = {
+static const uint8_t cpu_font[] = {
 	0xF0, 0x90, 0x90, 0x90, 0xF0, /* 0 */
 	0x20, 0x60, 0x20, 0x20, 0x70, /* 1 */
 	0xF0, 0x10, 0xF0, 0x80, 0xF0, /* 2 */

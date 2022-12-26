@@ -1,5 +1,5 @@
-#ifndef _KEYMAP_H_
-#define _KEYMAP_H_
+#ifndef _INPUT_H_
+#define _INPUT_H_
 
 #include "cpu.h"
 
@@ -15,13 +15,13 @@
  */
 
 typedef struct {
-	SDL_Scancode chip8_keys[KEYS_COUNT];
-} keymap_t;
+	SDL_Scancode cpu_keys[KEYS_COUNT]; /* CPU keymap. */
+} input_t;
 
 /* Load default key mapping. */
-void keymap_load_default(keymap_t *map);
+void input_init(input_t *input);
 
 /* Read scancode from SDL_Event and update keystate. */
-void keymap_get_keystate(SDL_Event *event, keymap_t map, uint8_t keystate[KEYS_COUNT]);
+void input_update_keystate(SDL_Event *event, input_t input, uint8_t *keystate);
 
 #endif /* _KEYMAP_H_ */

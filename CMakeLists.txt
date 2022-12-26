@@ -15,7 +15,7 @@ target_sources(
 		src/configs.c
 		src/core.c
 		src/display.c
-		src/keymap.c
+		src/input.c
 		src/opcodes.c
 		src/utils.c
 )
