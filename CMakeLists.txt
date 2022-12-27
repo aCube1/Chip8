@@ -11,6 +11,7 @@ target_sources(
 	${PROJECT_NAME}
 	PRIVATE
 		src/main.c
+		src/audio.c
 		src/cpu.c
 		src/configs.c
 		src/core.c

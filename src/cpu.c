@@ -1,5 +1,6 @@
 #include "cpu.h"
 
+#include "audio.h"
 #include "display.h"
 #include "log.h"
 #include "opcodes.h"
@@ -82,6 +83,9 @@ int8_t cpu_update(cpu_t *cpu) {
 		cpu->has_gfx_changed = false;
 	}
 
+	/* Unpause audio if sound_timer is greater than 0. */
+	audio_pause(cpu->sound_timer <= 0);
+
 	/* Keep the pending cycles remainder. */
 	pending_cpu_cycles = fmodf(pending_cpu_cycles, 1.0);
 	pending_timer_cycles = fmodf(pending_timer_cycles, 1.0);
@@ -143,16 +147,22 @@ int8_t cpu_loadrom(cpu_t *cpu, const char *filepath) {
 }
 
 void cpu_update_screen(cpu_t *cpu) {
+	uint32_t target_color;
 	SDL_Surface *tex_surface = NULL;
 
 	SDL_LockTextureToSurface(cpu->screen, NULL, &tex_surface);
 	for (size_t x = 0; x < GFX_WIDTH; x += 1) {
 		for (size_t y = 0; y < GFX_HEIGHT; y += 1) {
 			uint8_t pixel = cpu->gfx[y * GFX_WIDTH + x];
-			uint32_t target_color =
-				pixel == 0x1
-					? SDL_MapRGBA(tex_surface->format, FORE_R, FORE_G, FORE_B, 0xFF)
-					: SDL_MapRGBA(tex_surface->format, BACK_R, BACK_G, BACK_B, 0xFF);
+			if (pixel == 0x1) {
+				target_color = SDL_MapRGBA(
+					tex_surface->format, FORE_R, FORE_G, FORE_B, 0xFF
+				);
+			} else {
+				target_color = SDL_MapRGBA(
+					tex_surface->format, BACK_R, BACK_G, BACK_B, 0xFF
+				);
+			}
 
 			surface_set_pixel(tex_surface, x, y, target_color);
 		}

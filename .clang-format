@@ -23,6 +23,7 @@ AlwaysBreakAfterReturnType: None
 BinPackArguments: true
 BinPackParameters: false
 BreakBeforeBinaryOperators: None
+BreakBeforeTernaryOperators: true
 
 IncludeBlocks: Regroup
 IndentPPDirectives: AfterHash
@@ -36,5 +37,5 @@ SpacesBeforeTrailingComments: 2
 ReferenceAlignment: Right
 PointerAlignment: Right
 
-PenaltyBreakAssignment: 32
+PenaltyBreakAssignment: 1000
 PenaltyReturnTypeOnItsOwnLine: 1000

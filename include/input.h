@@ -24,4 +24,4 @@ void input_init(input_t *input);
 /* Read scancode from SDL_Event and update keystate. */
 void input_update_keystate(SDL_Event *event, input_t input, uint8_t *keystate);
 
-#endif /* _KEYMAP_H_ */
+#endif /* _INPUT_H_ */

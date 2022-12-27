@@ -1,5 +1,6 @@
 #include "core.h"
 
+#include "audio.h"
 #include "cpu.h"
 #include "display.h"
 #include "input.h"
@@ -34,6 +35,11 @@ int8_t core_init(configs_t configs) {
 
 	if (create_display(&Core.display, configs.width, configs.height) != STATUS_OK) {
 		log_fatal("Unable to create display!");
+		return STATUS_ERROR;
+	}
+
+	if (audio_init() != STATUS_OK) {
+		log_fatal("Unable to initialize audio device!");
 		return STATUS_ERROR;
 	}
 
