@@ -1,8 +1,7 @@
 # Yet another Chip-8 ~~emulator~~ interpreter.
 
-Chip-8 was a virtual machine/programming language developed by RCA engineer Joseph Weisbecker in 1977 for the **COSMAC VIP** microcomputer. It was designed with 35 opcodes and resembles assembly language, but was made for the easier development of videogames on the VIP.
-
-Today, it is a popular target to be emulated because of its simplicity and charm.
+## History
+Chip-8 was a virtual machine/programming language developed by RCA engineer Joseph Weisbecker in 1977 for the **COSMAC VIP** microcomputer. It was intended as a simple way to make small programs and games for the computer. Chip-8 soon spread to the other computers, like Finnish Telmac 1800, the Australian DREAM 6800, ETI-660 and MicroBee, and the Canadian ACE VDU.
 
 ## Technical information
 The original Chip-8 was designed with the following specifications:
@@ -51,14 +50,14 @@ Run the program using:
 I don't know.
 
 ## Command-line arguments
-| long   | short | value | description                            |
-|--------|-------|-------|--------------------------------------- |
-| clock  |   c   |  int  | Set cpu clock speed(0-1000).           |
-| width  |       |  int  | Set window width to desired resolution |
-| height |       |  int  | Set window height to desired resolution|
-| help   |   h   |       | Show help message and then exits.      |
-| vesbose|   v   |       | Enable log output on terminal.         |
-| quiet  |   q   |       | Disbale log ouput on terminal.         |
+| long   | short | value | description                             |
+|--------|-------|-------|-----------------------------------------|
+| clock  |   c   |  int  | Set cpu clock speed(0-1000).            |
+| width  |       |  int  | Set window width to desired resolution  |
+| height |       |  int  | Set window height to desired resolution |
+| help   |   h   |       | Show help message and then exits.       |
+| vesbose|   v   |       | Enable log output on terminal.          |
+| quiet  |   q   |       | Disbale log ouput on terminal.          |
 
 <sub>***Note***: For while, the cpu screen will be stretched to the current resolution.</sub>
 
