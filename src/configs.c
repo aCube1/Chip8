@@ -11,6 +11,7 @@
 #define DEFAULT_WIDTH		800
 #define DEFAULT_HEIGHT		600
 #define DEFAULT_CLOCK_SPEED 400 /* Speed in Hz */
+#define MAX_CLOCK_SPEED		1000
 
 enum {
 	LOG_ALL = -1,
@@ -138,7 +139,7 @@ static int8_t fetch_identifier(
 static void set_clock(uint16_t *clock, const char *value) {
 	if (value != NULL) {
 		int32_t speed = strtol(value, NULL, 10);
-		*clock = speed != 0 ? speed : DEFAULT_CLOCK_SPEED;
+		*clock = speed > 0 && speed < MAX_CLOCK_SPEED ? speed : DEFAULT_CLOCK_SPEED;
 	}
 }
 

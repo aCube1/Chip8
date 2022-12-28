@@ -43,7 +43,7 @@ int8_t core_init(configs_t configs) {
 		return STATUS_ERROR;
 	}
 
-	if (cpu_init(&Core.cpu, configs.clock_speed, Core.display.renderer) != STATUS_OK) {
+	if (cpu_init(&Core.cpu, configs.clock_speed) != STATUS_OK) {
 		log_fatal("Unable to init Chip-8 CPU!");
 		core_exit();
 		return STATUS_ERROR;
@@ -85,8 +85,13 @@ int8_t core_run(void) {
 			status = STATUS_ERROR;
 		}
 
+		/* Update cpu screen if gfx has changed. */
+		if (Core.cpu.has_gfx_changed) {
+			display_update_screen(&Core.display, Core.cpu.gfx);
+		}
+
 		display_clear(&Core.display, &Core.is_running);
-		if (display_render(&Core.display, Core.cpu.screen, NULL, NULL) != STATUS_OK) {
+		if (display_render_screen(&Core.display, NULL, NULL) != STATUS_OK) {
 			log_error("Unable to render CPU screen.");
 			status = STATUS_ERROR;
 		}
@@ -100,6 +105,7 @@ int8_t core_run(void) {
 	return status;
 }
 
+/* TODO: Render FPS on screen. */
 static void update_fps(void) {
 	fps_timer += (SDL_GetTicks64() - last_time) / 1000.0f;
 
@@ -113,7 +119,6 @@ static void update_fps(void) {
 }
 
 static void core_exit(void) {
-	cpu_quit(&Core.cpu);
 	destroy_display(&Core.display);
 	log_info("Core exitted!");
 }

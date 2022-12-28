@@ -32,7 +32,6 @@ typedef struct {
 
 	/* Screen has a total of 2048 pixels, and hold state of 0 or 1. */
 	uint8_t gfx[GFX_WIDTH * GFX_HEIGHT];
-	SDL_Texture *screen;
 	bool has_gfx_changed;
 
 	/* Timers count at 60Hz. When set above 0, they will count down to 0. */
@@ -51,19 +50,16 @@ typedef struct {
 	uint8_t y;		/* 00Y0 */
 } cpu_t;
 
-/* Reset CPU, create screen and load font to the memory. */
-int8_t cpu_init(cpu_t *cpu, uint16_t clock_speed, SDL_Renderer *renderer);
+/* Reset CPU and load font to the memory. */
+int8_t cpu_init(cpu_t *cpu, uint16_t clock_speed);
 
 /* Do cpu cycles and update timers. */
 int8_t cpu_update(cpu_t *cpu);
 void cpu_reset(cpu_t *cpu); /* Set CPU to a initial state. */
-void cpu_quit(cpu_t *cpu);	/* Destroy CPU. */
 
 /* Read rom from filepath and load it to the memory. */
 int8_t cpu_loadrom(cpu_t *cpu, const char *filepath);
 
 int8_t cpu_decode_opcode(cpu_t *cpu); /* Decode OPCODE and execute instruction. */
-
-void cpu_update_screen(cpu_t *cpu);
 
 #endif /* _CPU_H_ */

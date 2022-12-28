@@ -20,9 +20,6 @@ static double pending_timer_cycles = 0;
 static int8_t do_cpu_cycles(cpu_t *cpu, uint32_t amount); /* Fetch and decode opcodes. */
 static void do_timers_cycles(cpu_t *cpu, uint32_t amount);
 
-static const SDL_PixelFormatEnum texture_pixel_format = SDL_PIXELFORMAT_ABGR32;
-static const SDL_TextureAccess texture_access = SDL_TEXTUREACCESS_STREAMING;
-
 static const uint8_t cpu_font[] = {
 	0xF0, 0x90, 0x90, 0x90, 0xF0, /* 0 */
 	0x20, 0x60, 0x20, 0x20, 0x70, /* 1 */
@@ -42,16 +39,8 @@ static const uint8_t cpu_font[] = {
 	0xF0, 0x80, 0xF0, 0x80, 0x80, /* F */
 };
 
-int8_t cpu_init(cpu_t *cpu, uint16_t clock_speed, SDL_Renderer *renderer) {
+int8_t cpu_init(cpu_t *cpu, uint16_t clock_speed) {
 	cpu_reset(cpu); /* Reset CPU to a initial state. */
-
-	cpu->screen = SDL_CreateTexture(
-		renderer, texture_pixel_format, texture_access, GFX_WIDTH, GFX_HEIGHT
-	);
-	if (cpu->screen == NULL) {
-		log_error("Unable to create Chip8 render screen: %s", SDL_GetError());
-		return STATUS_ERROR;
-	}
 
 	cpu->clock_speed = clock_speed;
 	return STATUS_OK;
@@ -75,12 +64,6 @@ int8_t cpu_update(cpu_t *cpu) {
 	if (do_cpu_cycles(cpu, (uint32_t)pending_cpu_cycles) != STATUS_OK) {
 		log_error("Unable to do cpu cycles!");
 		return STATUS_ERROR;
-	}
-
-	/* Update cpu screen if gfx array has changed */
-	if (cpu->has_gfx_changed) {
-		cpu_update_screen(cpu);
-		cpu->has_gfx_changed = false;
 	}
 
 	/* Unpause audio if sound_timer is greater than 0. */
@@ -115,13 +98,6 @@ void cpu_reset(cpu_t *cpu) {
 	);
 }
 
-void cpu_quit(cpu_t *cpu) {
-	if (cpu->screen != NULL) {
-		SDL_DestroyTexture(cpu->screen);
-		log_info("Chip8 render screen destroyed!");
-	}
-}
-
 int8_t cpu_loadrom(cpu_t *cpu, const char *filepath) {
 	const uint32_t max_rom_size = RAM_SIZE - ROM_OFFSET; /* 0xDFF = 3584 bytes */
 	FILE *rom = fopen(filepath, "rb");
@@ -144,30 +120,6 @@ int8_t cpu_loadrom(cpu_t *cpu, const char *filepath) {
 
 	file_free(&file); /* We don't need the file anymore. */
 	return STATUS_OK;
-}
-
-void cpu_update_screen(cpu_t *cpu) {
-	uint32_t target_color;
-	SDL_Surface *tex_surface = NULL;
-
-	SDL_LockTextureToSurface(cpu->screen, NULL, &tex_surface);
-	for (size_t x = 0; x < GFX_WIDTH; x += 1) {
-		for (size_t y = 0; y < GFX_HEIGHT; y += 1) {
-			uint8_t pixel = cpu->gfx[y * GFX_WIDTH + x];
-			if (pixel == 0x1) {
-				target_color = SDL_MapRGBA(
-					tex_surface->format, FORE_R, FORE_G, FORE_B, 0xFF
-				);
-			} else {
-				target_color = SDL_MapRGBA(
-					tex_surface->format, BACK_R, BACK_G, BACK_B, 0xFF
-				);
-			}
-
-			surface_set_pixel(tex_surface, x, y, target_color);
-		}
-	}
-	SDL_UnlockTexture(cpu->screen);
 }
 
 static int8_t do_cpu_cycles(cpu_t *cpu, uint32_t amount) {

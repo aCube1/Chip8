@@ -277,9 +277,8 @@ static uint16_t opcode_XOR(cpu_t *cpu) {
 static uint16_t opcode_ADD(cpu_t *cpu) {
 	const uint8_t reg_y = cpu->V[cpu->y];
 	uint8_t *reg_x = &cpu->V[cpu->x];
-	uint16_t val = *reg_x + reg_y;
 
-	cpu->V[0xF] = val > UINT8_MAX; /* Set carry flag. */
+	cpu->V[0xF] = (*reg_x + reg_y) > UINT8_MAX; /* Set carry flag. */
 	*reg_x += reg_y;
 	return NEXT_PC;
 }
@@ -292,21 +291,24 @@ static uint16_t opcode_SUB(cpu_t *cpu) {
 	const uint8_t reg_y = cpu->V[cpu->y];
 	uint8_t *reg_x = &cpu->V[cpu->x];
 
-	cpu->V[0xF] = *reg_x > reg_y; /* Set not borrow. */
+	cpu->V[0xF] = *reg_x > reg_y ? 1 : 0; /* Set not borrow. */
 	*reg_x -= reg_y;
 	return NEXT_PC;
 }
 
 /* 0x8xy6 - SHR: Set Vx = Vx SHR 1.
- * Interpreter set VF to the least-significant bit of Vx. Then Vx is divided by 2.
- * Vy is ignored.
- * WARN: Ambiguous opcode.
+ * New:
+ * 		Shift Vx to RIGHT and store result in Vx.
+ * 		Interpreter set VF to the least-significant bit of Vx.
+ * Legacy:
+ * 		Shift Vy to RIGHT and store result in Vx.
+ * 		Interpreter set VF to the least-significant bit of Vy.
  */
 static uint16_t opcode_SHR(cpu_t *cpu) {
-	uint8_t *reg = &cpu->V[cpu->x];
+	uint8_t *reg_x = &cpu->V[cpu->x];
 
-	cpu->V[0xF] = *reg & 0x1;
-	*reg >>= 1;
+	cpu->V[0xF] = *reg_x & 0x1;
+	*reg_x = *reg_x >> 1;
 	return NEXT_PC;
 }
 
@@ -318,21 +320,24 @@ static uint16_t opcode_SUBN(cpu_t *cpu) {
 	const uint8_t reg_y = cpu->V[cpu->y];
 	uint8_t *reg_x = &cpu->V[cpu->x];
 
-	cpu->V[0xF] = *reg_x < reg_y; /* Set not borrow. */
+	cpu->V[0xF] = reg_y > *reg_x ? 1 : 0; /* Set not borrow. */
 	*reg_x = reg_y - (*reg_x);
 	return NEXT_PC;
 }
 
 /* 0x8xyE - SHL: Set Vx = Vx SHL 1.
- * Interpreter set VF to the most-significant bit of Vx. Then Vx is multiplied by 2.
- * Vy is ignored.
- * WARN: Ambiguous opcode.
+ * New:
+ * 		Shift Vx to LEFT and store result in Vx.
+ * 		Interpreter set VF to the least-significant bit of Vx.
+ * Legacy:
+ * 		Shift Vy to LEFT and store result in Vx.
+ * 		Interpreter set VF to the least-significant bit of Vy.
  */
 static uint16_t opcode_SHL(cpu_t *cpu) {
-	uint8_t *reg = &cpu->V[cpu->x];
+	uint8_t *reg_x = &cpu->V[cpu->x];
 
-	cpu->V[0xF] = (*reg >> 7) & 1;
-	*reg <<= 1;
+	cpu->V[0xF] = (*reg_x >> 7) & 0x1;
+	*reg_x = *reg_x << 1;
 	return NEXT_PC;
 }
 
@@ -529,6 +534,7 @@ static uint16_t opcode_STBCD(cpu_t *cpu) {
 /* 0xFx55 - STREG: Store registers V0 through Vx in memory starting at location I.
  * The interpreter copies the values of registers V0 through Vx into memory,
  * starting at the address in I.
+ * I is set to 'I + X + 1' after operation.
  */
 static uint16_t opcode_STREG(cpu_t *cpu) {
 	const uint8_t reg = cpu->x;
@@ -537,12 +543,14 @@ static uint16_t opcode_STREG(cpu_t *cpu) {
 		cpu->memory[cpu->I + i] = cpu->V[i];
 	}
 
+	cpu->I += cpu->x + 1;
 	return NEXT_PC;
 }
 
 /* 0xFx65 - LDREG: Read registers V0 through Vx from memory starting at location I.
  * The interpreter reads values from memory starting at location I into
  * registers V0 through Vx.
+ * I is set to 'I + X + 1' after operation.
  */
 static uint16_t opcode_LDREG(cpu_t *cpu) {
 	const uint8_t reg = cpu->x;
@@ -551,5 +559,6 @@ static uint16_t opcode_LDREG(cpu_t *cpu) {
 		cpu->V[i] = cpu->memory[cpu->I + i];
 	}
 
+	cpu->I += cpu->x + 1;
 	return NEXT_PC;
 }

@@ -8,11 +8,17 @@
 typedef struct {
 	SDL_Window *window;
 	SDL_Renderer *renderer;
+	SDL_Texture *cpu_screen;
 } display_t;
 
 int8_t create_display(display_t *display, int16_t width, int16_t height);
 void destroy_display(display_t *display);
 
+/* Update screen texture using cpu array. */
+void display_update_screen(display_t *display, uint8_t *gfx);
+int8_t display_render_screen(display_t *display, SDL_Rect *srcrect, SDL_Rect *dstrect);
+
+/* Set desired pixel on the surface to the desired color. */
 int8_t surface_set_pixel(SDL_Surface *surface, uint32_t x, uint32_t y, uint32_t color);
 
 /* SDL_RenderCopy wrapper. Return STATUS_ERROR if error. */
