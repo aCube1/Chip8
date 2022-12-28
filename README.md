@@ -1,7 +1,7 @@
 # Yet another Chip-8 ~~emulator~~ interpreter.
 
 ## History
-Chip-8 was a virtual machine/programming language developed by RCA engineer Joseph Weisbecker in 1977 for the **COSMAC VIP** microcomputer. It was intended as a simple way to make small programs and games for the computer. Chip-8 soon spread to the other computers, like Finnish Telmac 1800, the Australian DREAM 6800, ETI-660 and MicroBee, and the Canadian ACE VDU.
+Chip-8 was a virtual machine/programming language developed by RCA engineer **Joseph Weisbecker** in 1977 for the **COSMAC VIP** microcomputer. It was intended as a simple way to make small programs and games for the computer. Chip-8 soon spread to the other computers, like **Finnish Telmac 1800**, the Australian **DREAM 6800**, **ETI-660** and **MicroBee**, and the Canadian **ACE VDU**.
 
 ## Technical information
 The original Chip-8 was designed with the following specifications:
