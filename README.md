@@ -1,7 +1,7 @@
 <div align="center" style="display: inline_block">
-	<img alt="License MIT" src="https://img.shields.io/github/license/aCube1/Chip8?style=flat-square">
+	<a href="https://github.com/aCube1/Chip8/releases"><img alt="Release" src="https://img.shields.io/github/release/aCube1/Chip8.svg?style=flat-square"></a>
+	<a href="./LICENSE"><img alt="License MIT" src="https://img.shields.io/github/license/aCube1/Chip8?style=flat-square"></a>
 	<img alt="Contribution is Welcome" src="https://img.shields.io/badge/Contributions-Welcome-brightgreen.svg?style=flat-square">
-	<img src="https://hits.dwyl.com/aCube1/Chip8.svg?style=flat-square">
 </div>
 
 # Yet another Chip-8 ~~emulator~~ interpreter.
@@ -69,15 +69,15 @@ I don't know.
 
 ## Controls:
 ### Keyboard (This is the default keymap)
-`1` `2` `3` `4`
-`Q` `W` `E` `R`
-`A` `S` `D` `F`
+`1` `2` `3` `4`  
+`Q` `W` `E` `R`  
+`A` `S` `D` `F`  
 `Z` `X` `C` `V`
 
 ### COSMAC VIP Keypad
-`1` `2` `3` `C`
-`4` `5` `6` `D`
-`7` `8` `9` `E`
+`1` `2` `3` `C`  
+`4` `5` `6` `D`  
+`7` `8` `9` `E`  
 `A` `0` `B` `F`
 
 ## TODOs
