@@ -71,6 +71,8 @@ static int8_t fetch_identifier(
 	cag_option_context *context, configs_t *config, char identifier
 );
 
+static void show_help_message(void);
+
 static void set_clock(uint16_t *clock, const char *value);
 static void set_width(int16_t *width, const char *value);
 static void set_height(int16_t *height, const char *value);
@@ -78,6 +80,12 @@ static void set_height(int16_t *height, const char *value);
 int8_t cfg_parse_options(configs_t *config, int argc, char *argv[]) {
 	char identifier;
 	cag_option_context context;
+
+	/* No arguments provided, show help text and stop the program. */
+	if (argc < 2) {
+		show_help_message();
+		return STATUS_STOP;
+	}
 
 	*config = (configs_t){
 		.rom_filepath = "",
@@ -127,13 +135,17 @@ static int8_t fetch_identifier(
 		log_mode = LOG_QUIET;
 		break;
 	case 'a':
-		/* TODO: Better help message. */
-		printf("Usage: Chip8 [OPTIONS] <path-to-rom>");
-		cag_option_print(options, CAG_ARRAY_SIZE(options), stdout);
+		show_help_message();
 		return STATUS_STOP;
 	}
 
 	return STATUS_OK;
+}
+
+static void show_help_message(void) {
+	/* TODO: Better help message. */
+	puts("Usage: Chip8 [OPTIONS] <path-to-rom>");
+	cag_option_print(options, CAG_ARRAY_SIZE(options), stdout);
 }
 
 static void set_clock(uint16_t *clock, const char *value) {
