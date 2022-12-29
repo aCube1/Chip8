@@ -1,3 +1,8 @@
+<div align="center" style="display: inline_block">
+	<img alt="License MIT" src="https://img.shields.io/github/license/aCube1/Chip8?style=flat-square">
+	<img alt="Contribution is Welcome" src="https://img.shields.io/badge/Contributions-Welcome-brightgreen.svg?style=flat-square">
+	<img src="https://hits.dwyl.com/aCube1/Chip8.svg?style=flat-square">
+</div>
 # Yet another Chip-8 ~~emulator~~ interpreter.
 
 ## History
@@ -28,7 +33,7 @@ The original Chip-8 was designed with the following specifications:
 
 ### Procedures
 ### Linux
-For building, you can use this procedure:  
+For building, you can use this procedure:
 ```
 $ mkdir build
 $ cmake -B build -DCMAKE_BUILD_TYPE=Release
@@ -44,34 +49,34 @@ After building with above procedure, the binary will be located in `build/bin/` 
 Run the program using:
 `$ ./build/bin/Chip8 <path-to-rom>`
 
-<sub>There's some test roms located in `roms` directory, you can use them. :)</sub>
-
 ### Windows
 I don't know.
 
+<sub>There are some test roms located in `roms` directory, you can use them. :)</sub>
+
 ## Command-line arguments
-| long   | short | value | description                             |
-|--------|-------|-------|-----------------------------------------|
-| clock  |   c   |  int  | Set cpu clock speed(0-1000).            |
-| width  |       |  int  | Set window width to desired resolution  |
-| height |       |  int  | Set window height to desired resolution |
-| help   |   h   |       | Show help message and then exits.       |
-| vesbose|   v   |       | Enable log output on terminal.          |
-| quiet  |   q   |       | Disbale log ouput on terminal.          |
+|  long   | short | value | description                             |
+|---------|-------|-------|-----------------------------------------|
+|  clock  |   c   |  int  | Set cpu clock speed(0-1000).            |
+|  width  |       |  int  | Set window width to desired resolution  |
+|  height |       |  int  | Set window height to desired resolution |
+|  help   |   h   |       | Show help message and then exits.       |
+| verbose |   v   |       | Enable log output on terminal.          |
+|  quiet  |   q   |       | Disbale log ouput on terminal.          |
 
 <sub>***Note***: For while, the cpu screen will be stretched to the current resolution.</sub>
 
 ## Controls:
 ### Keyboard (This is the default keymap)
-`1` `2` `3` `4`  
-`Q` `W` `E` `R`  
-`A` `S` `D` `F`  
+`1` `2` `3` `4`
+`Q` `W` `E` `R`
+`A` `S` `D` `F`
 `Z` `X` `C` `V`
 
 ### COSMAC VIP Keypad
-`1` `2` `3` `C`  
-`4` `5` `6` `D`  
-`7` `8` `9` `E`  
+`1` `2` `3` `C`
+`4` `5` `6` `D`
+`7` `8` `9` `E`
 `A` `0` `B` `F`
 
 ## TODOs
@@ -87,8 +92,12 @@ I don't know.
 + [Chip-8 Extensions and compatibility](https://chip-8.github.io/extensions)
 + [Chip-8 Test Suite](https://github.com/Timendus/chip8-test-suite)
 
-## Contributing
-Anyone is welcome to contribute!
-
 ## License
 This project is licensed under the MIT license, so you are free to do almost everything you want.
+
+## Contributing
+Anyone is welcome to contribute! Here is our contributors:
+
+<a href="https://github.com/aCube1/Chip8/graphs/contributors">
+<img src="https://contrib.rocks/image?repo=aCube1/Chip8"/>
+</a>
