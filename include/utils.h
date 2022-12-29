@@ -5,7 +5,6 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#define STATUS_STOP	 -2 /* Stop program execution. */
 #define STATUS_ERROR -1
 #define STATUS_OK	 0
 

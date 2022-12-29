@@ -5,6 +5,9 @@
 
 #define MAX_FILEPATH_SIZE 1024
 
+#define STATUS_STOP		  1 /* Stop program execution. */
+#define STATUS_CONTINUE	  2 /* Continue program execution. */
+
 typedef struct {
 	char rom_filepath[MAX_FILEPATH_SIZE];
 	uint16_t clock_speed;

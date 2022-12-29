@@ -73,6 +73,7 @@ static int8_t fetch_identifier(
 
 static void show_help_message(void);
 
+static int8_t set_rom_filepath(char *filepath, char *value);
 static void set_clock(uint16_t *clock, const char *value);
 static void set_width(int16_t *width, const char *value);
 static void set_height(int16_t *height, const char *value);
@@ -107,10 +108,8 @@ int8_t cfg_parse_options(configs_t *config, int argc, char *argv[]) {
 	/* Set logging mode. */
 	log_set_quiet(log_mode == LOG_QUIET);
 
-	memcpy(config->rom_filepath, argv[context.index], MAX_FILEPATH_SIZE);
-	config->rom_filepath[MAX_FILEPATH_SIZE - 1] = '\0';
-
-	return STATUS_OK;
+	/* Get rom filepath. */
+	return set_rom_filepath(config->rom_filepath, argv[context.index]);
 }
 
 static int8_t fetch_identifier(
@@ -139,13 +138,26 @@ static int8_t fetch_identifier(
 		return STATUS_STOP;
 	}
 
-	return STATUS_OK;
+	return STATUS_CONTINUE;
 }
 
 static void show_help_message(void) {
 	/* TODO: Better help message. */
 	puts("Usage: Chip8 [OPTIONS] <path-to-rom>");
 	cag_option_print(options, CAG_ARRAY_SIZE(options), stdout);
+}
+
+static int8_t set_rom_filepath(char *filepath, char *value) {
+	size_t filepath_size = strlen(value);
+	if (filepath_size > MAX_FILEPATH_SIZE) {
+		log_error("Filepath size is greater than %d bytes", MAX_FILEPATH_SIZE);
+		return STATUS_STOP;
+	}
+
+	memcpy(filepath, value, filepath_size);
+	filepath[filepath_size] = '\0';
+
+	return STATUS_CONTINUE;
 }
 
 static void set_clock(uint16_t *clock, const char *value) {
